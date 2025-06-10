@@ -34,8 +34,6 @@ export default function History({ auth }) {
     useEffect(() => {
         fetchQCHistory();
     }, []);
-    // console.log(tasks);
-
     return (
         <div className="flex flex-col gap-4">
             <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200">

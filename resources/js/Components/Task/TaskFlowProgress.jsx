@@ -1,6 +1,10 @@
 import { getProgressColor } from "@/utils/taskProgressColor.js";
 
-export default function TaskFlowProgress({ currentTaskFlow }) {
+export default function TaskFlowProgress({
+    currentTaskFlow,
+    hasFeedBack,
+    hasQC,
+}) {
     const steps = JSON.parse(currentTaskFlow);
     return (
         <div className="w-1/5 h-fit pr-3">
@@ -8,6 +12,11 @@ export default function TaskFlowProgress({ currentTaskFlow }) {
                 <div className="font-bold text-lg w-full text-center">
                     Tiến trình
                 </div>
+                {hasFeedBack && (
+                    <div className="text-yellow-600 text-center font-bold text-lg">
+                        Khách có feedback
+                    </div>
+                )}
                 {steps && (
                     <div className="flex gap-4 flex-col">
                         {steps.map((step) => (

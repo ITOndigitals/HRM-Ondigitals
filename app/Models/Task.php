@@ -124,4 +124,8 @@ class Task extends Model implements Auditable
     {
         return $this->belongsTo(StepDetail::class, 'step_id');
     }
+    public function taskGroup()
+    {
+        return $this->belongsTo(Task::class, 'parent_task_id');
+    }
 }

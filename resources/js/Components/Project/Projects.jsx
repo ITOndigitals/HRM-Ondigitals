@@ -53,6 +53,7 @@ export default function Projects({ auth }) {
                 onProjectUpdated={handleProjectChange} // Truyền callback vào ProjectsList
                 auth={auth}
                 edit={true}
+                creatable={true}
             />
             {loading && (
                 <div className="flex flex-col gap-4 justify-center ">

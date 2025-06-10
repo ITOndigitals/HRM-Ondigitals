@@ -50,7 +50,7 @@ export default function QCTaskList({ auth }) {
             <div className="bg-amber-100">
                 {projects &&
                     projects.map((task) => (
-                        <>
+                        <div key={task.id}>
                             <div
                                 className="flex w-full gap-4 px-4 cursor-pointer rounded duration-150 hover:bg-amber-200 h-[60px] py-1"
                                 onClick={() => {
@@ -104,7 +104,7 @@ export default function QCTaskList({ auth }) {
                                     />
                                 </>
                             )}
-                        </>
+                        </div>
                     ))}
             </div>
         </>

@@ -89,6 +89,7 @@ export default function CreateTaskModal({
                     route("Create_sub_task"),
                     formData
                 );
+
                 alert(
                     response.data.message || "Sub task created successfully!"
                 );
@@ -100,7 +101,6 @@ export default function CreateTaskModal({
             setIsCreating(false);
         } catch (error) {
             console.error();
-            console.log(error);
             setIsCreating(false);
 
             alert("failed to create task ");

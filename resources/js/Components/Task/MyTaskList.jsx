@@ -48,13 +48,13 @@ export default function MyTaskList({ auth, edit }) {
                             <div className="font-bold content-center w-[50px] flex-shrink-0">
                                 ID
                             </div>
-                            <div className="w-2/12 font-bold content-center">
+                            <div className="w-2/12 font-bold content-center text-center">
                                 Tên Công Việc
                             </div>
-                            <div className="w-2/12 font-bold content-center">
+                            <div className="w-2/12 font-bold content-center text-center">
                                 Phòng ban thực hiện
                             </div>
-                            <div className="w-2/12 font-bold content-center">
+                            <div className="w-2/12 font-bold content-center text-center">
                                 Tên Dự Án
                             </div>
                             <div className="w-1/12 text-center font-bold content-center">
@@ -88,13 +88,13 @@ export default function MyTaskList({ auth, edit }) {
                         <div className="font-bold content-center  w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-2/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center text-center">
                             Tên Công Việc
                         </div>
-                        <div className="w-2/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center text-center">
                             Phòng ban thực hiện
                         </div>
-                        <div className="w-2/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center text-center">
                             Tên Dự Án
                         </div>
                         <div className="w-1/12 text-center font-bold content-center">

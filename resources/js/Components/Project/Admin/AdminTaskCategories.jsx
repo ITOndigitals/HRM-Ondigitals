@@ -82,7 +82,6 @@ export default function adminTaskStatus({}) {
     const handleParentChange = (selectedOption) => {
         const selectedIds = selectedOption.map((option) => option.value);
         setCategoryParent(selectedIds);
-        console.log(categoryParent);
     };
     const handleEdit = (item) => {
         if (item.parent_id) {
