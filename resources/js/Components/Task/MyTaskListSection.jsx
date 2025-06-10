@@ -29,10 +29,10 @@ export default function MyTaskListSection({
                             <div className="w-2/12 line-clamp-2 content-center">
                                 {item.name}
                             </div>
-                            <div className="w-2/12 line-clamp-2 content-center">
+                            <div className="w-2/12 line-clamp-2 content-center text-center">
                                 {item?.department?.department_name}
                             </div>
-                            <div className="w-2/12 line-clamp-2 content-center">
+                            <div className="w-2/12 line-clamp-2 content-center text-center">
                                 {item?.project?.name}
                             </div>
 

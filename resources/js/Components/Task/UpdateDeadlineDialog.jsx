@@ -11,15 +11,11 @@ export default function MyDialog({
 }) {
     const handleAccepted = async () => {
         try {
-            // console.log(deadline);
-            // console.log(task);
             const { data } = await axios.post(
                 route("update_deadline_all_task", task.id),
                 { deadline: deadline }
             );
-            console.log(task);
             alert(data.message);
-            console.log(data.message);
             setIsDialogOpen(false);
             onTaskCreate();
         } catch (error) {

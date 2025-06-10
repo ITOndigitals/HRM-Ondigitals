@@ -73,7 +73,6 @@ export default function Department_detail({
                 route("get_department_member", department.id)
             );
             setMembers(data);
-            console.log(data);
         } catch (error) {
             console.log(error);
         }

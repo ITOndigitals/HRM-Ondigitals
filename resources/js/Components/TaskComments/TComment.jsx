@@ -187,7 +187,6 @@ export default function TComment({
         // xóa file và update db nếu có delete file
         // giữ nguyên db nếu không có
         setFilePath(null);
-        console.log(deletedFile);
     };
 
     return (

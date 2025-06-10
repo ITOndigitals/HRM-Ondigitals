@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CreateTaskModal from "../Task/CreateTaskModal";
 import { getStatusColor } from "@/utils/statusColor";
 import TaskListSection from "../Task/TaskListSection";
+import AdminTaskListSection from "./Admin/AdminTaskListSection";
 
 export default function ProjectsList({
     project,
@@ -9,6 +10,7 @@ export default function ProjectsList({
     edit,
     setSelectedProject,
     onProjectUpdated,
+    creatable,
 }) {
     const [showTasks, setShowTasks] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -80,15 +82,17 @@ export default function ProjectsList({
                             </div>
                         </div>
 
-                        <div
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                handleCreateTask(project.id);
-                            }}
-                            className="cursor-pointer text-blue-600 pr-2"
-                        >
-                            + Thêm công việc
-                        </div>
+                        {creatable && (
+                            <div
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleCreateTask(project.id);
+                                }}
+                                className="cursor-pointer text-blue-600 pr-2"
+                            >
+                                + Thêm công việc
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -141,17 +145,31 @@ export default function ProjectsList({
                                 : `opacity-0 max-h-0`
                         }`}
                     >
-                        <TaskListSection
-                            tasks={project.tasks}
-                            projectDeadline={project.end_date}
-                            projectParticipants={participants}
-                            onTaskCreate={onProjectUpdated}
-                            edit={edit}
-                            auth={auth}
-                            viewMore={viewMore}
-                            handleViewMore={handleViewMore}
-                            handleCreateTask={handleCreateTask}
-                        />
+                        {creatable ? (
+                            <TaskListSection
+                                tasks={project.tasks}
+                                projectDeadline={project.end_date}
+                                projectParticipants={participants}
+                                onTaskCreate={onProjectUpdated}
+                                edit={edit}
+                                auth={auth}
+                                viewMore={viewMore}
+                                handleViewMore={handleViewMore}
+                                handleCreateTask={handleCreateTask}
+                            />
+                        ) : (
+                            <AdminTaskListSection
+                                tasks={project.tasks}
+                                projectDeadline={project.end_date}
+                                projectParticipants={participants}
+                                onTaskCreate={onProjectUpdated}
+                                edit={edit}
+                                auth={auth}
+                                viewMore={viewMore}
+                                handleViewMore={handleViewMore}
+                                handleCreateTask={handleCreateTask}
+                            />
+                        )}
                     </div>
                 )}
             </>

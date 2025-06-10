@@ -9,6 +9,6 @@ export const getProgressColor = (id) => {
         case 4: // feedback
             return "fill-blue-500 text-blue-500";
         default:
-            return "bg-gray-200 text-gray-800"; // Default màu nền
+            return "fill-yellow-600 text-yellow-600"; // Default màu nền
     }
 };

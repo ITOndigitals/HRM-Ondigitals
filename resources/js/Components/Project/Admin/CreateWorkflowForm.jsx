@@ -11,7 +11,6 @@ export default function createWorkflowForm({
     setModal,
     fetchWorkflow,
 }) {
-    // console.log(initialWorkflow);
     const [categories, setCategories] = useState([]);
     const [steps, setSteps] = useState();
     const [departments, setDepartments] = useState([]);
@@ -107,7 +106,6 @@ export default function createWorkflowForm({
     };
     const updateWorkflow = async (e) => {
         try {
-            console.log(formData.category);
             const { data } = await axios.post(
                 route("update_task_workflow", initialWorkflow.id),
                 {
@@ -125,7 +123,6 @@ export default function createWorkflowForm({
             setModal(false);
         } catch (error) {
             console.error();
-            console.log(error);
         }
     };
     const addNewWorkflow = async (e) => {
@@ -147,7 +144,6 @@ export default function createWorkflowForm({
             setModal(false);
         } catch (error) {
             console.error();
-            console.log(error);
         }
     };
     return (

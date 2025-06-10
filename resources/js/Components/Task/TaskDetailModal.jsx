@@ -427,6 +427,8 @@ export default function TaskDetailModal({
     return (
         <div className="fixed flex top-0 right-0 w-3/5 h-full bg-white shadow-lg px-3 py-6 overflow-auto z-20 items-stretch">
             <TaskFlowProgress
+                hasFeedBack={task?.feedback}
+                hasQC={task?.qc_note}
                 currentTaskFlow={task.task_step_flow}
             ></TaskFlowProgress>
             <div className="flex flex-col w-4/5 border-l border-gray-400 pl-4 h-fit relative">
@@ -489,6 +491,7 @@ export default function TaskDetailModal({
                             <input
                                 type="text"
                                 className="border rounded w-full p-2"
+                                readOnly={task.parent_task_id}
                                 value={formData.name}
                                 onChange={(e) =>
                                     setFormData({

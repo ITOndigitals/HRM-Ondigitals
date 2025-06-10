@@ -52,7 +52,6 @@ export default function adminTaskStep({}) {
             setModal(false);
         } catch (error) {
             console.error();
-            console.log(error);
         }
     };
     const confirmDelete = async (id) => {

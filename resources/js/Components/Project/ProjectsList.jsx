@@ -7,6 +7,7 @@ export default function ProjectsList({
     onProjectUpdated,
     auth,
     edit,
+    creatable,
 }) {
     const [selectedProject, setSelectedProject] = useState(null);
     return (
@@ -34,6 +35,7 @@ export default function ProjectsList({
                                 project={item}
                                 auth={auth}
                                 edit={edit}
+                                creatable={creatable}
                                 setSelectedProject={setSelectedProject}
                                 onProjectUpdated={onProjectUpdated}
                             />
