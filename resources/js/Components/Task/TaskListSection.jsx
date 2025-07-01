@@ -33,7 +33,7 @@ export default function TaskListSection({
             )}
             {/* render the first element */}
             {tasks?.length > 0 ? (
-                <div className="">
+                <div>
                     <div>
                         <Task
                             projectDeadline={projectDeadline}
@@ -63,7 +63,7 @@ export default function TaskListSection({
                     >
                         {tasks.slice(1).map((task) => (
                             <Task
-                                projectDeadlin={projectDeadline}
+                                projectDeadline={projectDeadline}
                                 key={task.id}
                                 task={task}
                                 projectParticipants={projectParticipants}

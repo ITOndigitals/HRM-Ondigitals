@@ -101,6 +101,7 @@ export default function CreateTaskModal({
             setIsCreating(false);
         } catch (error) {
             console.error();
+            console.log(error);
             setIsCreating(false);
 
             alert("failed to create task ");

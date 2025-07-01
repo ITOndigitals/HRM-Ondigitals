@@ -23,6 +23,7 @@ use App\Models\TaskUser;
 use App\Models\TaskWorkFlows;
 use App\Models\User;
 use App\Models\UserDepartment;
+use App\Services\FirebaseService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -34,9 +35,14 @@ use Psy\Readline\Hoa\Console;
 class TaskController extends Controller
 {
     //
+    protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseTaskService)
+    {
+        $this->firebaseService = $firebaseTaskService;
+    }
     public function createMainTask(Request $request)
     {
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -66,7 +72,8 @@ class TaskController extends Controller
             'step_order' => 1,
             'created_by' => auth()->id(),
             'due_date' => $validated['due_date'],
-            'department_id' => $validated['department'],
+            // change 12/06
+            'department_id' => $curStep['department'],
             'qc_status' => null,
             'step_id' => $curStep["current_step_id"],
         ]);
@@ -86,7 +93,8 @@ class TaskController extends Controller
             'step_order' => 2,
             'created_by' => auth()->id(),
             'due_date' => $newTask['due_date'],
-            'department_id' => $newTask['department_id'],
+            // change 12/06
+            'department_id' => $validated['department'],
             'qc_status' => null,
             'step_id' => $curStep["next_step_id"],
             'parent_task_id' => $newTask['id'],
@@ -98,6 +106,7 @@ class TaskController extends Controller
             "step_name" =>  $step['name'],
             "status" => 2,
             "next_assignee_name" => $user['name'],
+            "task_id" => $newTask['id']
         ];
         $nextStepDetail = $newLeaderTask->stepDetail;
 
@@ -106,22 +115,23 @@ class TaskController extends Controller
             "step_name" =>  $nextStepDetail['name'],
             "status" => 1,
             "next_assignee_name" => $department_leader['name'],
+            "task_id" => $newLeaderTask['id']
         ];
         $newTask->task_step_flow = json_encode($taskStepFlow);
         $newTask->save();
         $newLeaderTask->task_step_flow = json_encode($taskStepFlow);
         $newLeaderTask->save();
-        // $this->addTaskStepFlow($newTask, $newLeaderTask, $nextStep);
         if ($newTask) {
             try {
                 Mail::to($department_leader['email'])->send(new AccountCreateTaskEmail($newTask, $user, $nextDepartment->department_name));
             } catch (Exception $e) {
                 Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($newTask, $e->getMessage()));
             }
+            // viết vào firebase database
+            $this->firebaseService->sendTask($newLeaderTask['next_assignee_id'], $newLeaderTask,  $newTask['step_id']);
         }
         return response()->json(['message' => "create task successfully"], 200);
     }
-
     public function addTaskStepFlow(Task $parent, Task $children, ?TaskWorkFlows $curStep = null, ?User $assignee = null)
     {
         $taskStepFlow = json_decode($parent['task_step_flow']);
@@ -160,6 +170,8 @@ class TaskController extends Controller
                 'step_name' => $step['currentStep']['name'],
                 'status' => $index === 0 ? 1 : null,
                 'next_assignee_name' => $firstStep ? ($assignee ? $assignee['name'] : "") : null,
+                // 11/6
+                'task_id' => $firstStep ? $children['id'] : "",
             ];
             $firstStep = false;
         }
@@ -167,7 +179,6 @@ class TaskController extends Controller
         $children->save();
         return $children['task_step_flow'];
     }
-
     public function updateTaskStepFlow(Task $task, $status = null, ?User $nextAssignee = null)
     // task: task cần update
     // status: status của task cần update
@@ -177,8 +188,10 @@ class TaskController extends Controller
         foreach ($taskStepFlow as $index => $step) {
             if ($step['step_id'] === $task['step_id']) {
                 $taskStepFlow[$index]['status'] = $status;
+                $taskStepFlow[$index]['task_id'] = $task['id'];
                 if ($nextAssignee && isset($taskStepFlow[$index + 1])) {
                     $taskStepFlow[$index + 1]['next_assignee_name'] = $nextAssignee['name'];
+                    // 11/6
                 }
                 break;
             }
@@ -205,15 +218,14 @@ class TaskController extends Controller
     }
     public function update(Request $request, $id)
     {
-
         $user = auth()->user();
         $isAccount =  $user->isDepartment(3);
         // return response()->json(['message' =>  $user->isDepartment(4)]);
         $task = Task::find($id);
-
         if ($task->qc_status) {
             return response()->json(["message" => "Công việc đã được xác nhận không được sửa"]);
         }
+        // return response()->json(['message'=>$request->member_due_date]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -230,9 +242,26 @@ class TaskController extends Controller
             ]);
         }
         $task->description = $validated['description'];
-        // 
-
         $task->save();
+        // xử lý update deadline của team Account 
+        $haveDeadlineConflict = false;
+        if ($request->member_due_date && $request->member_due_date !== $task['due_date']) {
+            // leader update task   
+            // return response()->json(['message' => $request->member_due_date]);
+            $this->updateTaskDeadline($task, $validated['member_due_date'], $user);
+        }
+        if ($request->due_date && $request->member_due_date !== $task['due_date']) {
+            // account update task 
+            $lastChildrenTask = Task::where('parent_task_id', $id)->where('due_date', '>', $validated['due_date'])->orderBy('created_at', 'desc')->first();
+            if ($lastChildrenTask) {
+                $haveDeadlineConflict = $lastChildrenTask;
+                // update mail send 
+            } else {
+                $this->updateTaskDeadline($task, $validated['due_date'], $user);
+            }
+        }
+        // xử lý links
+        $this->handleTaskLink($request, $task);
         // xử lý file khi update
         $project_files = ProjectFile::where('uploaded_by', auth()->id())->where('task_id', $id)->first();
         // trường hợp request có gửi file
@@ -266,7 +295,13 @@ class TaskController extends Controller
                 $project_files->update([
                     'file_list' => json_encode($fileList),
                 ]);
-                return response()->json(['message' => 'Task updated successfully!', 'old_files' => $fileList], 200);
+                try {
+                    $receiver = $task->assignee;
+                    Mail::to($receiver['email'])->send(new TaskUpdateEmail($task, $user->name));
+                } catch (Exception $e) {
+                    Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($task, $e->getMessage()));
+                }
+                return response()->json(['message' => 'Task updated successfully!', 'old_files' => $fileList, 'deadlineConflict' => $haveDeadlineConflict], 200);
             } else {
                 // có gửi file nhưng không tồn tại project_files trong databse
                 $allFiles = $request->file("files");
@@ -285,7 +320,13 @@ class TaskController extends Controller
                     'uploaded_by' => auth()->id(),
                     'file_list' => json_encode($fileList),
                 ]);
-                return response()->json(["message" => "Task updated"], 200);
+                try {
+                    $receiver = $task->assignee;
+                    Mail::to($receiver['email'])->send(new TaskUpdateEmail($task, $user->name));
+                } catch (Exception $e) {
+                    Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($task, $e->getMessage()));
+                }
+                return response()->json(["message" => "Task updated successfully!", 'deadlineConflict' => $haveDeadlineConflict], 200);
             }
         } else {
             // trường hợp không gửi file nhưng project_files trong db có tồn tại và có request xóa file 
@@ -307,22 +348,26 @@ class TaskController extends Controller
                 $project_files->save();
             }
         }
+        // $this->handleTaskLink($request, $task);
 
-        $haveDeadlineConflict = false;
-        if ($request->member_due_date && $request->member_due_date !== $task['due_date']) {
-            // leader update task   
-            $this->updateTaskDeadline($task, $validated['member_due_date'], $user);
-        }
-        if ($request->due_date && $request->member_due_date !== $task['due_date']) {
-            // account update task 
-            $lastChildrenTask = Task::where('parent_task_id', $id)->where('due_date', '>', $validated['due_date'])->orderBy('created_at', 'desc')->first();
-            if ($lastChildrenTask) {
-                $haveDeadlineConflict = $lastChildrenTask;
-                // update mail send 
-            } else {
-                $this->updateTaskDeadline($task, $validated['due_date'], $user);
-            }
-        }
+        // return response()->json(['message' => $test]);
+        // $taskDepartment = $task->department;
+        // $taskDepartmentName = $taskDepartment['department_name'];
+        // trường hợp request có links
+        // if ($request->links) {
+        //     if ($task['task_links']) {
+        //         $DbLinks = json_decode($task['task_links'], true);
+        //     } else {
+        //         $DbLinks = [];
+        //     }
+        //     $newLinks = $request->links;
+        //     foreach ($newLinks as $link) {
+        //         $DbLinks[$taskDepartmentName][] = $link;
+        //     }
+        //     $task->task_links = json_encode($DbLinks);
+        //     $task->save();
+        // }
+
         try {
             $receiver = $task->assignee;
             Mail::to($receiver['email'])->send(new TaskUpdateEmail($task, $user->name));
@@ -338,7 +383,6 @@ class TaskController extends Controller
             200
         );
     }
-
     public function updateTaskDeadline(Task $task, $due_date, $user)
     {
         if (empty($task['parent_id'])) {
@@ -411,7 +455,6 @@ class TaskController extends Controller
             return response()->json(["message" => "comment not exist"]);
         }
     }
-
     // lấy task của user ở tab My Task
     public function getUserTasks(Request $request)
     {
@@ -523,6 +566,8 @@ class TaskController extends Controller
         $this->updateTaskStepFlow($previousTask, 2, $assginee);
         // create member tasks
         // tạo project file nếu có file
+        $this->handleTaskLink($request, $leaderTask);
+
         if ($request->hasFile('files')) {
             $fileList = [];
             $allFiles = (array) $request->file("files");
@@ -572,10 +617,10 @@ class TaskController extends Controller
                 'due_date' => $validated['due_date'],
                 'department_id' => $previousTask['department_id'],
                 'parent_task_id' => $previousTask['parent_task_id'],
-                'feedback' => $previousTask['feedback']
+                'feedback' => $previousTask['feedback'],
+                'task_links' => $leaderTask['task_links'],
             ]);
             $data = $this->createTaskStepFlow($previousTask, $newTask, null, $assginee);
-            // return response()->json($data);
             $this->updateTaskStepFlow($newTask, 1, auth()->user());
         }
         // assign task khong co parent
@@ -594,7 +639,8 @@ class TaskController extends Controller
                 'due_date' => $validated['due_date'],
                 'department_id' => $previousTask['department_id'],
                 'parent_task_id' => $previousTask['parent_task_id'],
-                'feedback' => $previousTask['feedback']
+                'feedback' => $previousTask['feedback'],
+                'task_links' => $leaderTask['task_links'],
             ]);
             if ($validated['category_id'] == 3) {
                 $this->createTaskStepFlow($previousTask, $newTask, null, $assginee);
@@ -605,14 +651,16 @@ class TaskController extends Controller
                 $newTask->save();
             }
         }
-
         $this->copyParentDescriptionAndFile($previousTask, $request, $id);
+        // gửi mail sau khi giao việc thành công
         try {
             $receiver = $newTask->assignee;
             Mail::to($receiver['email'])->send(new LeaderAssignTaskEmail($newTask, auth()->user()->name));
         } catch (Exception $e) {
             Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($newTask, $e->getMessage()));
         }
+        // thông báo lên firebase sau khi giao việc thành công 
+        $this->firebaseService->sendTask($newTask['next_assignee_id'], $newTask, $leaderTask['step_id']);
         return response()->json(['message' => 'Công việc được giao thành công!']);
     }
     public function submitTask(Request $request, $id)
@@ -643,14 +691,14 @@ class TaskController extends Controller
             // $previousTask->save();
             $this->updateTaskStepFlow($previousTask, 2);
         }
-
+        // xử lý link
+        $this->handleTaskLink($request, $previousTask);
         $nextTaskStatus = null;
         if ($previousTask['status'] === 4) {
             $nextTaskStatus = 4;
         } else {
             $nextTaskStatus = $previousTask['next_assignee_id'] === $nextDepartment['manager'] ? 2 : 1;
         }
-
         $parent_task = Task::where('id', $previousTask['parent_task_id'])->first();
         // create qc task for department leader
         $newTask = Task::create([
@@ -669,6 +717,7 @@ class TaskController extends Controller
             'parent_task_id' => $previousTask['parent_task_id'],
             'feedback' => $previousTask['feedback'],
             'task_step_flow' => $previousTask['task_step_flow'],
+            'task_links' => $previousTask['task_links'],
         ]);
         $nextLeaderStep = TaskWorkFlows::where('category_id', $newTask['category_id'])
             ->where('step_order', $newTask['step_order'] + 1)->first();
@@ -681,9 +730,7 @@ class TaskController extends Controller
             $nextLeader = $nextLeaderDepartment->manager()->first();
         }
         $this->updateTaskStepFlow($newTask, 1, $nextLeader);
-        // $memberFlow = $this->addTaskStepFlow($previousTask, $newTask, null, $nextLeader);
         // xử lý file nếu có 
-
         if ($request->hasFile('files') || $request->delete_files) {
             $fileList = [];
             $projectFiles = ProjectFile::where("task_id", $previousTask['id'])->first();
@@ -734,7 +781,7 @@ class TaskController extends Controller
             }
         }
         $this->copyParentDescriptionAndFile($previousTask, $request, $id);
-        // if ($previousTask['category_id'] == 4 && $previousTask['step_id'] == 3  && ($previousTask['status'] !== 3 && $previousTask['status'] !== 4) && empty($previousTask['feedback'])) {
+        $parentTask = $previousTask->parent;
         if ($previousTask['category_id'] == 4 && $previousTask['step_id'] == 3  && (empty($previousTask['feedback']) && empty($previousTask['qc_note']))) {
             $postCaptionTask = Task::create([
                 'parent_id' => $previousTask['parent_id'],
@@ -746,12 +793,14 @@ class TaskController extends Controller
                 'category_id' => 5,
                 'step_id' => 3,
                 'step_order' => 1,
-                'created_by' => auth()->id(),
+                // 'created_by' => auth()->id(),
+                'created_by' => $previousTask['created_by'],
                 'due_date' => $previousTask['due_date'],
                 'department_id' =>  $nextDepartment['id'],
                 'parent_task_id' => $previousTask['parent_task_id'],
+                'task_links' => $parentTask['task_links'],
             ]);
-            $parentTask = $previousTask->parent;
+
             $this->createTaskStepFlow($parentTask, $postCaptionTask, null, $previousTask->assignee);
             $this->updateTaskStepFlow($postCaptionTask, 1, $parentTask->assignee);
         }
@@ -768,6 +817,7 @@ class TaskController extends Controller
                 Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($previousTask, $e->getMessage()));
             }
         }
+        $this->firebaseService->sendTask($newTask['next_assignee_id'], $newTask, $previousTask['step_id']);
         return response()->json(["message" => "Task submitted!"]);
     }
     // lấy tất cả các task cần QC
@@ -798,9 +848,7 @@ class TaskController extends Controller
         $task = Task::find($id);
         //lấy task của member vừa làm
         $memberTask = $task->parent;
-
         if ($task &&  $memberTask) {
-            //
             if ($memberTask->status !== 2) {
                 return response()->json(['message' => "Task is not completed"], 200);
             }
@@ -818,6 +866,7 @@ class TaskController extends Controller
                     $task->name = $validated['name'];
                 }
                 $task->save();
+                $this->handleTaskLink($request, $task);
                 if ($request->hasFile("files")) {
                     // file từ request 
                     // thieu file trong qc submit
@@ -871,10 +920,10 @@ class TaskController extends Controller
                         'department_id' =>  $nextDepartment['id'],
                         'parent_task_id' => $task['parent_task_id'],
                         'feedback' => $task['feedback'],
-                        'task_step_flow' => $task['task_step_flow']
+                        'task_step_flow' => $task['task_step_flow'],
+                        'task_links' => $task['task_links']
                     ]);
                     $currentDepartment = Department::find($task['department_id']);
-
                     // gửi mail cho team kế tiếp
                     try {
                         $receiver = $newTask->assignee;
@@ -882,6 +931,11 @@ class TaskController extends Controller
                     } catch (Exception $e) {
                         Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($newTask, $e->getMessage()));
                     }
+                    // gửi thông báo cho member lên firebase
+                    //gửi thông báo chấp nhận công việc cho member 
+                    $this->firebaseService->sendTask($memberTask['next_assignee_id'], $memberTask, $task['step_id']);
+                    //gửi thông báo về task mới cho team kế tiếp 
+                    $this->firebaseService->sendTask($newTask['next_assignee_id'], $newTask, $task['step_id']);
                 }
             } else {
                 // nếu decline thì chuyển trạng thái task từ hoàn thành sang in progress
@@ -890,14 +944,17 @@ class TaskController extends Controller
                 $memberTask->qc_note = $request->qc_note;
                 $memberTask->created_at = now();
                 $memberTask->save();
+                try {
+                    $receiver = $memberTask->assignee;
+                    Mail::to($receiver['email'])->send(new TaskStatusChangeEmail($memberTask, auth()->user()->name));
+                } catch (Exception $e) {
+                    Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($memberTask, $e->getMessage()));
+                }
+                // gửi thông báo lên firebase 
+                // $memberTask->load('creator');
+                $this->firebaseService->sendTask($memberTask['next_assignee_id'], $memberTask, $task['step_id']);
             }
             // gửi mail
-            try {
-                $receiver = $memberTask->assignee;
-                Mail::to($receiver['email'])->send(new TaskStatusChangeEmail($memberTask, auth()->user()->name));
-            } catch (Exception $e) {
-                Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($memberTask, $e->getMessage()));
-            }
             $task->status = 2;
             $task->save();
             $parent_file = $this->copyParentDescriptionAndFile($task, $request, $id);
@@ -996,6 +1053,7 @@ class TaskController extends Controller
             'department_id' => $executorTask['department_id'],
             'parent_task_id' => $executorTask['parent_task_id'],
             'task_step_flow' => $executorTask['task_step_flow'],
+            'task_links' => $task['task_links'],
             'feedback' => $request->feedback
         ]);
         $this->updateTaskStepFlow($newExecutorTask, 4);
@@ -1007,9 +1065,9 @@ class TaskController extends Controller
         } catch (Exception $e) {
             Mail::to('duongvihien01@gmail.com')->send(new ErrorMail($newExecutorTask, $e->getMessage()));
         }
+        $this->firebaseService->sendTask($newExecutorTask['next_assignee_id'], $newExecutorTask,  $task['step_id']);
         return response()->json(['message' => 'Gửi feedback thành công!']);
     }
-
     public function accountCompleteTask(Request $request, $id)
     {
         $task = Task::find($id);
@@ -1134,7 +1192,8 @@ class TaskController extends Controller
         if ((!$task['description'] || (!$request->hasFile('files') && !$request->delete_files)) && $task->parent) {
             $parent = $task->parent;
             if (!$task['description']) {
-                $task->description =  $parent['description'];
+                // $task->description =  $parent['description'];
+                $task->description =  $parent->description;
             }
             if (!$request->hasFile('files') && !$request->delete_files) {
                 $parentProjectFiles = $parent->projectFiles()->first();
@@ -1221,8 +1280,81 @@ class TaskController extends Controller
             unset($project->statusDetails);
         });
         $hasMore = $projects->count() < 16 ? false : true;
-
-
         return response()->json(['hasMore' => $hasMore, 'projects' => $projects->take(15)]);
+    }
+    // public function getTaskFlowDetail(Request $request, $id) {}
+    public function handleTaskLink(Request $request, Task $task)
+    {
+        if ($request->delete_links || $request->links) {
+            if ($task['task_links']) {
+                $DbLinks = json_decode($task['task_links'], true);
+            } else {
+                $DbLinks = [];
+            }
+            $taskDepartment = $task->department;
+            $taskDepartmentName = $taskDepartment->department_name;
+            if ($request->delete_links) {
+                $deletedLinks = $request->delete_links;
+                rsort($deletedLinks);
+                // xoa link
+                foreach ($deletedLinks as $index) {
+                    if (isset($DbLinks[$taskDepartmentName][$index])) { // Ensure index exists
+                        array_splice($DbLinks[$taskDepartmentName], $index, 1); // Remove from original array
+                    }
+                }
+            }
+            if ($request->links) {
+                $newLinks = $request->links;
+                foreach ($newLinks as $link) {
+                    $DbLinks[$taskDepartmentName][] = $link;
+                }
+                // $task->save();
+            }
+            $task->task_links = json_encode($DbLinks);
+            $task->save();
+            $children = $task->children;
+            if ($children) {
+                foreach ($children as $child) {
+                    $child->update([
+                        "task_links" => json_encode($DbLinks)
+                    ]);
+                }
+            }
+        }
+    }
+    public function getTodayDueTasks()
+    {
+        // $today = now();
+        // do {
+        //     $task = Task::whereDate('due_date', $today)
+        //         ->whereNot('status', 2)
+        //         ->with(['creator', 'assignee', 'statusDetails', 'department', 'taskGroup', 'stepDetail', 'category'])
+        //         ->get();
+        //     $today->addDays(1);
+        // } while ($task->count() < 5);
+        // return response()->json($task);
+        $today = now();
+        $collectedTasks = collect();
+        do {
+            $tasks = Task::whereDate('due_date', $today)
+                ->whereNotIn('status', [2, 5])
+                ->whereNot('step_id', 1) // bỏ qua bước khởi tạo
+                ->orderBy('step_id', 'desc')
+                ->with(['creator', 'assignee', 'statusDetails', 'department', 'taskGroup', 'stepDetail', 'category'])
+                ->get();
+            // $collectedTasks = $collectedTasks->merge($tasks);
+            $today->addDay();
+        } while ($tasks->count() == 0);
+        //  while ($collectedTasks->count() <= 4 && $today->lte(now()->addDays(30))); // prevent infinite loop
+        // return response()->json($collectedTasks->ta->values());
+        return response()->json($tasks);
+    }
+    public function updateFirebaseViewStatus(Request $request, $id)
+    {
+        $userId = auth()->id();
+        if ($id) {
+            $result = $this->firebaseService->updateTask($userId, $id);
+        }
+        return response()->json($result);
     }
 }

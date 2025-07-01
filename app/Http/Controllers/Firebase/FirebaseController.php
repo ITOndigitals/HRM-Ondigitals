@@ -32,20 +32,16 @@ class FirebaseController extends Controller
     public function sendToFirebase(Request $request, $id)
     {
         $dt = Carbon::now('Asia/Ho_Chi_Minh');
-
         // Lấy dữ liệu từ request
         $requestData = $request->only(['id_user', 'request_name', 'id_template', 'follower']);
-
         // Lấy thông tin người dùng và quản lý từ model User
         $user = User::find($requestData['id_user']);
         $qltt = User::find($requestData['follower']);
-
         // Khởi tạo biến
         $name = optional($user)->name;
         $name_qltt = optional($qltt)->name;
         $email = optional($user)->email;
         $email_qltt = optional($qltt)->email;
-
         // Dữ liệu để ghi vào Firebase
         $postData = [
             'name' =>  $name,
@@ -59,9 +55,8 @@ class FirebaseController extends Controller
             "statusRead" => 0,
             "statusRequest" => 0,
             "timeStamp" => $dt->toDateTimeString(),
-            "timeStampUpdate" => $dt->toDateTimeString()
+            "timeStampUpdate" => $dt->toDateTimeString(),
         ];
-
         // Thực hiện ghi dữ liệu vào Firebase cho người gửi
         $postSenderRef = $this->database->getReference($this->tableName . '/' . $requestData['id_user'] . '/' . $id . '/send');
         $postSenderRef->set($postData);
@@ -78,16 +73,13 @@ class FirebaseController extends Controller
     public function updateToFirebase(Request $request, $id)
     {
         $dt = Carbon::now('Asia/Ho_Chi_Minh');
-
         $requestData = $request->only(['idUser', 'idFollower', 'statusRequest', 'statusRead']);
         $postData = [
             "statusRead" => $requestData['statusRead'],
             "statusRequest" => $requestData['statusRequest'],
             "timeStampUpdate" => $dt->toDateTimeString()
         ];
-
         // Tiếp tục xử lý dữ liệu
-
         $postSenderRef = $this->database->getReference($this->tableName . '/' . (int)$requestData['idUser'] . '/' . (int)$id . '/send');
         $postSenderRef->update($postData);
         // Thực hiện ghi dữ liệu vào Firebase cho người nhận (quản lý trực tiếp)
@@ -104,7 +96,6 @@ class FirebaseController extends Controller
     {
         // Lấy dữ liệu từ yêu cầu
         $requestData = $request->only(['idUser', 'isUserSend']);
-
         // Kiểm tra xem dữ liệu yêu cầu có đầy đủ không
         if (!isset($requestData['idUser']) || !isset($requestData['isUserSend'])) {
             return response()->json([
@@ -112,7 +103,6 @@ class FirebaseController extends Controller
                 "message" => "Invalid request data"
             ], 400);
         }
-
         // Lấy danh sách người dùng
         $userList = User::pluck('name', 'id')->all();
         $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);

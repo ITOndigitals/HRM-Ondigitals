@@ -14,7 +14,6 @@ class Task extends Model implements Auditable
     use HasFactory,
         SoftDeletes;
     protected $table = 'tasks';
-
     protected $fillable = [
         'parent_id',
         'project_id',
@@ -32,7 +31,8 @@ class Task extends Model implements Auditable
         'qc_note',
         'parent_task_id',
         'task_step_flow',
-        'feedback'
+        'feedback',
+        'task_links',
     ];
     // Liên kết đến task cha
     protected static function boot()
@@ -46,7 +46,6 @@ class Task extends Model implements Auditable
                     $comment->delete();
                 }
             }
-
             // delete sub-tasks
             if ($task->children->isNotEmpty()) {
                 foreach ($task->children as $child) {

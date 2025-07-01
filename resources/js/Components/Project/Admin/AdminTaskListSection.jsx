@@ -28,7 +28,7 @@ export default function AdminTaskListSection({
                         Người thực hiện
                     </div>
                     <div className="w-2/12 border-b-2 h-12 flex items-center font-bold justify-center">
-                        Tên công việc
+                        Nhiệm vụ
                     </div>
                     <div className="w-1/12 border-b-2 h-12 flex items-center font-bold justify-center">
                         Phòng ban
@@ -46,14 +46,14 @@ export default function AdminTaskListSection({
             )}
             {/* render the first element */}
             {tasks?.length > 0 ? (
-                <div className="">
+                <div>
                     <AdminTask
                         index={1}
-                        projectDeadline={projectDeadline}
+                        // projectDeadline={projectDeadline}
                         key={tasks[0].id}
                         task={tasks[0]}
-                        projectParticipants={projectParticipants}
-                        onTaskCreate={onTaskCreate}
+                        // projectParticipants={projectParticipants}
+                        // onTaskCreate={onTaskCreate}
                         edit={edit}
                         auth={auth}
                     />
@@ -76,7 +76,7 @@ export default function AdminTaskListSection({
                         {tasks.slice(1).map((task, index) => (
                             <AdminTask
                                 index={index + 2}
-                                projectDeadlin={projectDeadline}
+                                projectDeadline={projectDeadline}
                                 key={task.id}
                                 task={task}
                                 projectParticipants={projectParticipants}

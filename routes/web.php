@@ -117,16 +117,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/receive-to-firebase/{id}', [FirebaseController::class, 'index'])->name('receive-to-firebase');
     Route::post('/update-to-firebase/{id}', [FirebaseController::class, 'updateToFirebase'])->name('update-to-firebase');
     Route::post('/update-status-read/{id}', [FirebaseController::class, 'updateStatusRead'])->name('update-status-read');
-
     // comment
     Route::get('/get-all-comment/{id}', [CommentController::class, 'getCommentsByRequestId'])->name('Get-All-Comment');
     Route::post('/create-new-comment', [CommentController::class, 'storeComment'])->name('Create-New-Comment');
     Route::delete('/delete-comment/{id}', [CommentController::class, 'deleteComment'])->name('Delete-Comment');
     Route::post('/update-comment/{id}', [CommentController::class, 'update'])->name('Update-Comment');
-
     // notitfaction có người bình luận vào request
     Route::post('/create-notificaton-comment/{id}', [NotificationCommentController::class, 'sendCommentToFirebase'])->name('Create-Notificaton-Comment');
     Route::post('/update-notificaton-comment/{id}', [NotificationCommentController::class, 'updateStatusRead'])->name('Update-Notificaton-Comment');
+    //firebase task
+    Route::post('/update-task-view-status/{id}', [TaskController::class, 'updateFirebaseViewStatus'])->name('update_task_read_status');
     // search reuqest
     Route::get('/get-request-templates', [SearchRequestController::class, 'getRequestTemplates'])->name('Get-Request-Templates');
     Route::get('/list-approved-request', [ApprovedRequestsController::class, 'index'])->name('List-Approved-Request')->middleware('check.role:1,99');;
@@ -206,6 +206,7 @@ Route::middleware('auth')->group(function () {
         Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.departmentRole');
         Route::get('/n-qc-history', [TaskController::class, 'getNQCHistory'])->name('get_n_qc_history');
         Route::post("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
+        Route::get("/get-today-due-task", [TaskController::class, 'getTodayDueTasks'])->name('get_today_dued_tasks');
         // member task
         Route::get("/get-member-task", [TaskController::class, 'getMemberTask'])->name("get_member_task");
         Route::post("/submit-task/{id}", [TaskController::class, 'submitTask'])->name('member_submit_task');
