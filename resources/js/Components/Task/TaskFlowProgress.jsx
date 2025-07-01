@@ -1,11 +1,40 @@
 import { getProgressColor } from "@/utils/taskProgressColor.js";
+import { useState } from "react";
+import ParentTaskDetail from "./ParentTaskDetail";
 
 export default function TaskFlowProgress({
+    auth,
     currentTaskFlow,
     hasFeedBack,
+    renderQCstatus,
     hasQC,
 }) {
     const steps = JSON.parse(currentTaskFlow);
+    const [stepDetail, setStepDetail] = useState(null);
+    const [showParentStep, setShowParenStep] = useState(false);
+    const fetchStepDetail = async (taskId) => {
+        try {
+            const { data } = await axios.get(route("get_task_by_id", taskId));
+            if (data.task) {
+                setStepDetail(data.task);
+            } else {
+                setStepDetail(null);
+            }
+        } catch (error) {
+            console.error("Error fetching parent task:", error);
+        }
+    };
+    const handleStepClick = async (taskId) => {
+        try {
+            await fetchStepDetail(taskId);
+            if (taskId) {
+                setShowParenStep(true);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    // get the task here
     return (
         <div className="w-1/5 h-fit pr-3">
             <div className="flex flex-col gap-3">
@@ -22,9 +51,16 @@ export default function TaskFlowProgress({
                         {steps.map((step) => (
                             <div
                                 key={step.step_id}
+                                onClick={() => {
+                                    if (step.task_id) {
+                                        handleStepClick(step.task_id);
+                                    } else {
+                                        return;
+                                    }
+                                }}
                                 className={`${getProgressColor(
                                     step.status
-                                )} flex items-center flex-shrink-0 gap-2`}
+                                )} flex items-center flex-shrink-0 gap-2 rounded duration-500 border-transparent hover:border-blue-700 border-2 cursor-pointer`}
                             >
                                 <svg
                                     className="flex-shrink-0"
@@ -60,6 +96,18 @@ export default function TaskFlowProgress({
                         ))}
                     </div>
                 )}
+                <div>
+                    {showParentStep && (
+                        <ParentTaskDetail
+                            task={stepDetail}
+                            handleModalClose={() => {
+                                setShowParenStep(false);
+                            }}
+                            auth={auth}
+                            renderQCstatus={renderQCstatus}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

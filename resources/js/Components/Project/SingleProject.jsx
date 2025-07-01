@@ -53,10 +53,16 @@ export default function ProjectsList({
                 }`}
                 onClick={() => setSelectedProject(project)} // Chọn dự án
             >
-                <div className="w-3/6 h-12 flex items-center px-1 rounded-xl relative">
+                <div
+                    className={`${
+                        creatable ? `w-3/6` : `w-4/6`
+                    } h-12 flex items-center px-1 rounded-xl relative`}
+                >
                     <div className="flex justify-between w-full overflow-hidden h-full items-center">
                         <div
-                            className="flex w-3/4 h-full items-center border-r-2"
+                            className={`flex w-3/4 h-full items-center ${
+                                creatable ? `border-r-2` : ``
+                            }`}
                             onClick={(event) => {
                                 event.stopPropagation();
                                 setShowTasks(showTasks ? false : true);
@@ -96,9 +102,12 @@ export default function ProjectsList({
                     </div>
                 </div>
 
-                <div className="w-1/6 border-2 border-y-0 h-12 flex items-center px-2 text-base text-[#c92f54]">
-                    {project?.end_date}
-                </div>
+                {creatable && (
+                    <div className="w-1/6 justify-center border-2 border-y-0 h-12 flex items-center px-2 text-base text-[#c92f54]">
+                        {project?.end_date}
+                    </div>
+                )}
+
                 <div className="w-1/6 border-y-0 h-12 flex items-center px-2 text-base rounded-xl">
                     <p
                         className={`font-bold text-sm p-2 rounded-2xl w-full text-center ${getStatusColor(
@@ -163,7 +172,7 @@ export default function ProjectsList({
                                 projectDeadline={project.end_date}
                                 projectParticipants={participants}
                                 onTaskCreate={onProjectUpdated}
-                                edit={edit}
+                                edit={false}
                                 auth={auth}
                                 viewMore={viewMore}
                                 handleViewMore={handleViewMore}

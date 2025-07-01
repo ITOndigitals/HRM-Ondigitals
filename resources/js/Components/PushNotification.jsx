@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import axios from "axios";
 import Modal from "./Modal";
 import RequestDetail from "./RequestDetail";
+import TaskNotificationItem from "./TaskNotificationItem";
 
 const NotificationItem = ({ item, handleUpdateToFirebase }) => {
     const { receive, send } = item?.value || {};
@@ -102,7 +103,15 @@ const getStatusText = (statusRequest) => {
     }
 };
 
-export default function PushNotification({ data, user, dataCmt }) {
+export default function PushNotification({
+    data,
+    user,
+    dataCmt,
+    dataTask,
+    setNumberNotification,
+}) {
+    // console.log("PushNotificitaion");
+    // console.log(dataTask);
     if (!data) return null;
     const auth = { user };
     const userId = user?.id;
@@ -170,6 +179,16 @@ export default function PushNotification({ data, user, dataCmt }) {
                 >
                     Comments
                 </button>
+                <button
+                    className={`rounded-3xl px-4 py-2 ${
+                        activeTab === "tasks"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200"
+                    }`}
+                    onClick={() => setActiveTab("tasks")}
+                >
+                    Tasks
+                </button>
             </div>
             {activeTab === "requests" &&
                 data
@@ -189,6 +208,17 @@ export default function PushNotification({ data, user, dataCmt }) {
                     .reverse()
                     .map((item, index) => (
                         <CommentItem key={index} item={item} userId={userId} />
+                    ))}
+            {activeTab === "tasks" &&
+                dataTask &&
+                dataTask
+                    .reverse()
+                    .map((item, index) => (
+                        <TaskNotificationItem
+                            key={index}
+                            data={item}
+                            userId={userId}
+                        />
                     ))}
             <Modal show={showModalDetailRequest} onClose={closeModal}>
                 {userRequests ? (

@@ -16,12 +16,13 @@ export default function Authenticated({ user, header, children }) {
     const [isShowNotifaction, setIsShowNotification] = useState(false);
     const [dataRequest, setDataRequest] = useState({});
     const [dataNotificationCmt, setDataNotificationCmt] = useState(null);
-
+    const [dataTask, setDataTask] = useState(null);
+    let taskArray = [];
     let arrayDataRequest = [];
     const handleShowNotification = () => {
         setIsShowNotification((prev) => !prev);
     };
-    const calculateNotificationCount = (data, comments) => {
+    const calculateNotificationCount = (data, comments, tasks) => {
         let count = 0;
         Object.values(data || {}).forEach((obj) => {
             if (
@@ -33,6 +34,11 @@ export default function Authenticated({ user, header, children }) {
         });
         comments.forEach((comment) => {
             if (comment.statusRead === 0) {
+                count++;
+            }
+        });
+        tasks?.forEach((task) => {
+            if (task.status_read === 0) {
                 count++;
             }
         });
@@ -49,29 +55,42 @@ export default function Authenticated({ user, header, children }) {
         };
 
         const fetchNotifications = () => {
+            // trỏ đến database mục notification
             const notificationRef = ref(
                 database,
                 `notification/user/${user.id}`
             );
             const commentRef = ref(database, `comments/IdUser/${user.id}`);
-
+            const taskRef = ref(database, `tasks/user/${user.id}`);
+            // lấy data từ firebase
             onValue(notificationRef, (snapshot) => {
                 const notificationData = snapshot.val();
                 setDataRequest(notificationData);
-
+                // comment notification
                 onValue(commentRef, (commentSnapshot) => {
                     const commentData = commentSnapshot.val();
                     const comments = commentData
                         ? Object.values(commentData).flatMap(Object.values)
                         : [];
                     setDataNotificationCmt(comments);
-                    const totalNotifications = calculateNotificationCount(
-                        notificationData,
-                        comments
-                    );
-                    setNumberNotification(totalNotifications);
+                    // task notifications
+                    onValue(taskRef, (taskSnapshot) => {
+                        const taskNotificationsData = taskSnapshot.val();
+                        // remove the key get only the values
+                        const taskNotifications = Object.values(
+                            taskNotificationsData || {}
+                        );
+                        setDataTask(taskNotificationsData);
+                        const totalNotifications = calculateNotificationCount(
+                            notificationData,
+                            comments,
+                            taskNotifications
+                        );
+                        setNumberNotification(totalNotifications);
+                    });
                 });
             });
+            // lấy data của task tab
         };
 
         fetchNotifications();
@@ -83,6 +102,12 @@ export default function Authenticated({ user, header, children }) {
 
     if (dataRequest) {
         arrayDataRequest = Object.entries(dataRequest).map(([key, value]) => ({
+            key,
+            value,
+        }));
+    }
+    if (dataTask) {
+        taskArray = Object.entries(dataTask).map(([key, value]) => ({
             key,
             value,
         }));
@@ -270,6 +295,10 @@ export default function Authenticated({ user, header, children }) {
                                         data={arrayDataRequest}
                                         user={user}
                                         dataCmt={dataNotificationCmt}
+                                        dataTask={taskArray}
+                                        setNumberNotification={
+                                            setNumberNotification
+                                        }
                                     />
                                 )}
                             </div>

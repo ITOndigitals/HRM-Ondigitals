@@ -22,7 +22,7 @@ class NotificationCommentController extends Controller
     public function sendCommentToFirebase(Request $request, $id)
     {
         // Lấy các dữ liệu cần thiết từ request
-        $requestData = $request->only(['idFollower','type']);
+        $requestData = $request->only(['idFollower', 'type']);
         $dt = Carbon::now('Asia/Ho_Chi_Minh');
         $follower = isset($requestData["idFollower"]) ? (int)$requestData["idFollower"] : 36;
 
@@ -89,9 +89,6 @@ class NotificationCommentController extends Controller
         ];
         $postUpdate = $this->database->getReference($this->tableName . '/' . $requestData['idUser'] . '/' . $requestData['isRequest'] . '/' . $id);
         $postUpdate->update($postData);
-
-
-
         return response()->json(["status" => true]);
     }
 }

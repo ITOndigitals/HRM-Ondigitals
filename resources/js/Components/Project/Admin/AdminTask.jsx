@@ -22,7 +22,7 @@ export default function AdminTask({
     return (
         <div key={task.id}>
             <div
-                className="flex cursor-pointer border-b py-1 gap-4 items-center justify-center text-sm"
+                className="flex cursor-pointer border-b py-1 gap-4 items-center justify-center text-sm "
                 onClick={showTaskDetailModal}
             >
                 <div className="w-[50px] flex-shrink-0 text-center justify-center">
@@ -42,7 +42,6 @@ export default function AdminTask({
                 <div className="w-1/12 h-12 flex items-center justify-center">
                     {task?.department.department_name}
                 </div>
-
                 <div className="w-1/12 h-12 px-2 flex justify-center  items-center text-center">
                     {task.category.name}
                 </div>

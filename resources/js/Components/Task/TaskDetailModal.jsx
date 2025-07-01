@@ -8,6 +8,8 @@ import CkeditorComponent from "../CkeditorComponent";
 import ParentTaskDetail from "./ParentTaskDetail";
 import UpdateDeadlineDialog from "./UpdateDeadlineDialog";
 import { update } from "firebase/database";
+import LinkInput from "../LinkInput";
+import LinksList from "../LinksList";
 
 export default function TaskDetailModal({
     task,
@@ -34,10 +36,11 @@ export default function TaskDetailModal({
     const [deadline, setDeadline] = useState(null);
     const [processing, setProcessing] = useState(false);
     const [authDepartment, setAuthDepartment] = useState([]);
+    const [deletedLinks, setDeletedLinks] = useState([]);
     const isAccount = authDepartment.includes(3);
-    // open and close dialog
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+    const [dbLinks, setDbLinks] = useState(JSON.parse(task.task_links));
+    const [addedLinks, setAddedLinks] = useState([]);
     const fetchAuthDepartment = async () => {
         try {
             const { data } = await axios.get(route("get_auth_department"));
@@ -120,9 +123,9 @@ export default function TaskDetailModal({
                     feedback: feedback,
                 })
             );
+            console.log(data.message);
             alert(data.message);
             setUpdating(false);
-
             setShowFeedbackModal(false);
             onTaskCreate();
         } catch (error) {
@@ -179,11 +182,17 @@ export default function TaskDetailModal({
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("assignee", formData.assignee);
             formDataObject.append("project_id", formData.project_id);
+
             //          xử lý file
             // file mới thêm
             if (addedFiles.length > 0) {
                 Array.from(addedFiles).forEach((file) => {
                     formDataObject.append("files[]", file);
+                });
+            }
+            if (addedLinks.length > 0) {
+                Array.from(addedLinks).forEach((link) => {
+                    formDataObject.append("links[]", link);
                 });
             }
             const response = await axios.post(
@@ -195,6 +204,7 @@ export default function TaskDetailModal({
             setUpdating(false);
         } catch (error) {
             setUpdating(false);
+            console.log(error);
             alert("fail to assign task");
         }
     };
@@ -209,6 +219,22 @@ export default function TaskDetailModal({
             formDataObject.append("due_date", formData.due_date);
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("project_id", formData.project_id);
+            if (deletedFiles.length > 0) {
+                deletedFiles.forEach((fileIndex) => {
+                    formDataObject.append("delete_files[]", fileIndex);
+                });
+            }
+            // link cần xóa
+            if (deletedLinks.length > 0) {
+                deletedLinks.forEach((linkIndex) => {
+                    formDataObject.append("delete_links[]", linkIndex);
+                });
+            }
+            if (addedLinks.length > 0) {
+                Array.from(addedLinks).forEach((link) => {
+                    formDataObject.append("links[]", link);
+                });
+            }
             // xử lý file
             // file mới thêm
             if (addedFiles.length > 0) {
@@ -222,6 +248,7 @@ export default function TaskDetailModal({
                     formDataObject.append("delete_files[]", fileIndex);
                 });
             }
+
             // nếu người làm là leader thì không cần qc
             if (auth.user.id === task.created_by) {
                 formDataObject.append("approve", true);
@@ -273,7 +300,7 @@ export default function TaskDetailModal({
             } else {
                 formDataObject.append(
                     "member_due_date",
-                    formData.member_due_date
+                    formData?.member_due_date || ""
                 );
             }
             formDataObject.append("parent_id", formData.parent_id);
@@ -283,6 +310,18 @@ export default function TaskDetailModal({
             if (deletedFiles.length > 0) {
                 deletedFiles.forEach((fileIndex) => {
                     formDataObject.append("delete_files[]", fileIndex);
+                });
+            }
+            // link cần xóa
+            if (deletedLinks.length > 0) {
+                deletedLinks.forEach((linkIndex) => {
+                    formDataObject.append("delete_links[]", linkIndex);
+                });
+            }
+            // link mới thêm
+            if (addedLinks.length > 0) {
+                Array.from(addedLinks).forEach((link) => {
+                    formDataObject.append("links[]", link);
                 });
             }
             // file mới thêm
@@ -296,6 +335,7 @@ export default function TaskDetailModal({
                 route("Update_task", task.id),
                 formDataObject
             );
+            console.log(data.message);
             if (data.deadlineConflict) {
                 setIsDialogOpen(true);
             } else {
@@ -329,6 +369,23 @@ export default function TaskDetailModal({
             formDataObject.append("qc_note", qcNote);
             formDataObject.append("name", formData.name);
             formDataObject.append("description", formData.description);
+            // xử lý link
+            if (deletedFiles.length > 0) {
+                deletedFiles.forEach((fileIndex) => {
+                    formDataObject.append("delete_files[]", fileIndex);
+                });
+            }
+            // link cần xóa
+            if (deletedLinks.length > 0) {
+                deletedLinks.forEach((linkIndex) => {
+                    formDataObject.append("delete_links[]", linkIndex);
+                });
+            }
+            if (addedLinks.length > 0) {
+                Array.from(addedLinks).forEach((link) => {
+                    formDataObject.append("links[]", link);
+                });
+            }
             if (addedFiles.length > 0) {
                 Array.from(addedFiles).forEach((file) => {
                     formDataObject.append("files[]", file);
@@ -339,7 +396,6 @@ export default function TaskDetailModal({
                 formDataObject
             );
             alert(response.data.message);
-            // console.log(response.data.message);
             handleModalClose();
             onTaskCreate();
             setUpdating(false);
@@ -374,19 +430,8 @@ export default function TaskDetailModal({
                     <div className="text-red-600 font-bold text-xl">
                         Task Rejected
                     </div>
-                    <div>
-                        <div className="font-bold text-red-600 ">Lí do:</div>
-                        <textarea
-                            className=" w-full border-red-500 rounded"
-                            readOnly
-                            value={task?.qc_note}
-                            rows={2}
-                        ></textarea>
-                    </div>
                 </div>
             );
-        } else {
-            return <></>;
         }
     };
     // input file callback
@@ -423,13 +468,25 @@ export default function TaskDetailModal({
             alert("Không tồn tại");
         }
     };
-
+    //  tạm thời gán cứng Account
+    if (
+        dbLinks &&
+        !dbLinks.hasOwnProperty(task.department.department_name) &&
+        task.department.department_name != "Account"
+    ) {
+        setDbLinks((prev) => ({
+            ...prev,
+            [task.department.department_name]: [],
+        }));
+    }
     return (
         <div className="fixed flex top-0 right-0 w-3/5 h-full bg-white shadow-lg px-3 py-6 overflow-auto z-20 items-stretch">
             <TaskFlowProgress
+                renderQCstatus={renderQCstatus}
                 hasFeedBack={task?.feedback}
                 hasQC={task?.qc_note}
                 currentTaskFlow={task.task_step_flow}
+                auth={auth}
             ></TaskFlowProgress>
             <div className="flex flex-col w-4/5 border-l border-gray-400 pl-4 h-fit relative">
                 <button
@@ -446,7 +503,6 @@ export default function TaskDetailModal({
                     isDialogOpen={isDialogOpen}
                     onTaskCreate={onTaskCreate}
                 ></UpdateDeadlineDialog>
-
                 {task.parent_id && (
                     <div className="mt-6 flex space-x-4 justify-center">
                         <button
@@ -458,29 +514,19 @@ export default function TaskDetailModal({
                         </button>
                     </div>
                 )}
-
                 <h2 className="text-xl font-bold mb-2">
                     Chi tiết công việc:
                     <span className="text-gray-600 text-sm">
                         {` (tạo bởi ${task.creator?.name})`}
                     </span>
                 </h2>
-
                 {/* hiển thị trạng thái qc */}
-                {renderQCstatus(task)}
                 {task.feedback && (
-                    <div>
-                        <div className="font-bold text-yellow-600">
-                            Feedback của khách:
-                        </div>
-                        <textarea
-                            className="w-full rounded border-yellow-300"
-                            readOnly
-                            rows={2}
-                            value={task.feedback}
-                        ></textarea>
+                    <div className="text-yellow-600 font-bold text-xl">
+                        Khách có feedback
                     </div>
                 )}
+                {renderQCstatus(task)}
 
                 <div className="space-y-4">
                     <div>
@@ -527,7 +573,69 @@ export default function TaskDetailModal({
                             readOnly={!edit}
                         />
                     </div>
-
+                    {task.qc_status === 0 && (
+                        <div>
+                            <div className="font-bold text-red-600 ">
+                                Feedback của leader:
+                            </div>
+                            <textarea
+                                className=" w-full border-red-500 rounded"
+                                readOnly
+                                value={task?.qc_note}
+                                rows={3}
+                            ></textarea>
+                        </div>
+                    )}
+                    {task.feedback && (
+                        <div>
+                            <div className="font-bold text-yellow-600">
+                                Feedback của khách:
+                            </div>
+                            <textarea
+                                className="w-full rounded border-yellow-300"
+                                readOnly
+                                rows={3}
+                                value={task.feedback}
+                            ></textarea>
+                        </div>
+                    )}
+                    {/* user can only input link if the task are in their department     */}
+                    {edit && task.department.department_name != "Account" && (
+                        <LinkInput handleSubmit={setAddedLinks} />
+                    )}
+                    <div className="flex gap-2">
+                        {dbLinks
+                            ? Object.entries(dbLinks).map(([key, link]) => (
+                                  <div className="w-1/2" key={key}>
+                                      <LinksList
+                                          links={link}
+                                          setLinks={setDbLinks}
+                                          deleteLinks={setDeletedLinks}
+                                          title={key}
+                                          deleteAddedLinks={setAddedLinks}
+                                          addedLinks={
+                                              task.department
+                                                  .department_name === key
+                                                  ? addedLinks
+                                                  : null
+                                          }
+                                          canDelete={
+                                              task.department
+                                                  .department_name === key &&
+                                              edit
+                                          }
+                                      />
+                                  </div>
+                              ))
+                            : addedLinks.length > 0 && (
+                                  <div className="w-1/2">
+                                      <LinksList
+                                          addedLinks={addedLinks}
+                                          deleteAddedLinks={setAddedLinks}
+                                      />
+                                  </div>
+                              )}
+                    </div>
                     <div className="flex flex-col gap-4">
                         {task.qc_status !== 1 && edit && (
                             <>
@@ -588,46 +696,43 @@ export default function TaskDetailModal({
                                                     )}
                                             </div>
                                         ))}
-                                        {
-                                            // task.created_by === auth.user.id &&
-
-                                            addedFiles?.map((file, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex justify-between gap-4 h-6"
-                                                >
-                                                    <div className="flex w-11/12 text-blue-600 line-clamp-1 text-xs whitespace-nowrap">
-                                                        <a
-                                                            className="content-center"
-                                                            download
-                                                        >
-                                                            {file?.name}
-                                                        </a>
-                                                    </div>
-                                                    {task.next_assignee_id ==
-                                                        auth.user.id &&
-                                                        !task.qc_status &&
-                                                        file && (
-                                                            <button
-                                                                type="button"
-                                                                className="w-1/12 text-red-600"
-                                                                onClick={() => {
-                                                                    removeSelectedFile(
-                                                                        index
-                                                                    );
-                                                                }}
-                                                            >
-                                                                X
-                                                            </button>
-                                                        )}
+                                        {addedFiles?.map((file, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex justify-between gap-4 h-6"
+                                            >
+                                                <div className="flex w-11/12 text-blue-600 line-clamp-1 text-xs whitespace-nowrap">
+                                                    <a
+                                                        className="content-center"
+                                                        download
+                                                    >
+                                                        {file?.name}
+                                                    </a>
                                                 </div>
-                                            ))
-                                        }
+                                                {task.next_assignee_id ==
+                                                    auth.user.id &&
+                                                    !task.qc_status &&
+                                                    file && (
+                                                        <button
+                                                            type="button"
+                                                            className="w-1/12 text-red-600"
+                                                            onClick={() => {
+                                                                removeSelectedFile(
+                                                                    index
+                                                                );
+                                                            }}
+                                                        >
+                                                            X
+                                                        </button>
+                                                    )}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
+
                     <div className="flex gap-x-4">
                         <div className="mb-2">
                             <label className="block font-bold mb-2">
@@ -662,7 +767,6 @@ export default function TaskDetailModal({
                             />
                         </div>
                     </div>
-
                     {!qcMode &&
                     auth.user.id === task.department.manager &&
                     (task.step_id === 2 || task.step_id === 5) &&
@@ -895,13 +999,11 @@ export default function TaskDetailModal({
                             )}
                         </>
                     )}
-
                 <TaskComments
                     user={auth.user.id}
                     comments={dataComment}
                     taskId={task.id}
                 />
-
                 <div>
                     {showParent && (
                         <ParentTaskDetail

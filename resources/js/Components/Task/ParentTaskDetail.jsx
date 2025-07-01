@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import TaskComments from "../TaskComments/TaskComments";
 import CkeditorComponent from "../CkeditorComponent";
+import LinksList from "../LinksList";
 
 export default function ParentTaskDetail({
     task,
@@ -9,6 +10,8 @@ export default function ParentTaskDetail({
     auth,
     renderQCstatus,
 }) {
+    // const [dbLinks, setDbLinks] = useState();
+    const dbLinks = JSON.parse(task.task_links);
     const [dataComment, setDataComment] = useState([]);
     const fetchDataComment = async () => {
         try {
@@ -47,6 +50,11 @@ export default function ParentTaskDetail({
                 <h2 className="text-blue-600 font-bold">
                     {`Người tạo:`} <span>{task.assignee.name}</span>
                 </h2>
+                {task.feedback && (
+                    <div className="text-yellow-600 font-bold text-xl">
+                        Khách có feedback
+                    </div>
+                )}
                 {renderQCstatus(task)}
                 <div className="space-y-4">
                     <div>
@@ -69,7 +77,47 @@ export default function ParentTaskDetail({
                             editorId={`editor_${task?.id}`}
                         />
                     </div>
+                    {task.feedback && (
+                        <div>
+                            <div className="font-bold text-yellow-600">
+                                Feedback của khách:
+                            </div>
+                            <textarea
+                                className="w-full rounded border-yellow-300"
+                                readOnly
+                                rows={3}
+                                value={task.feedback}
+                            ></textarea>
+                        </div>
+                    )}
+                    {task.qc_status === 0 && (
+                        <div>
+                            <div className="font-bold text-red-600 ">
+                                Feedback của leader:
+                            </div>
+                            <textarea
+                                className=" w-full border-red-500 rounded"
+                                readOnly
+                                value={task?.qc_note}
+                                rows={3}
+                            ></textarea>
+                        </div>
+                    )}
+                    {/* links của công việc trước */}
+                    <div className="flex gap-2">
+                        {dbLinks &&
+                            Object.entries(dbLinks).map(([key, link]) => (
+                                <div className="w-1/2" key={key}>
+                                    <LinksList
+                                        links={link}
+                                        title={key}
+                                        canDelete={false}
+                                    />
+                                </div>
+                            ))}
+                    </div>
 
+                    {/* file của công việc trước */}
                     <div>
                         <div className="font-bold py-2">Files đính kèm:</div>
                         {task.project_files.length > 0 ? (
