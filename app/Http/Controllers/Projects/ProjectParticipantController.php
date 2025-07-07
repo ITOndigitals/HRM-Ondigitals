@@ -30,6 +30,5 @@ class ProjectParticipantController extends Controller
         //         ];
         //     });
 
-        return response()->json($participants);
     }
 }

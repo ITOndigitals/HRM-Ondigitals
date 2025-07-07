@@ -94,7 +94,6 @@ class ProjectController extends Controller
             // cascade soft delete trong models
             // Xóa dự án
             $project->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Project and participants deleted successfully!',

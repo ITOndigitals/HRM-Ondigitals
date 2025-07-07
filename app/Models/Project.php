@@ -20,6 +20,9 @@ class Project extends Model
                     $task->delete();
                 }
             }
+            if ($project->documents) {
+                $project->documents->delete();
+            }
         });
     }
     protected $table = 'projects';
@@ -44,5 +47,9 @@ class Project extends Model
     public function departments()
     {
         return $this->hasMany(DepartmentsProjects::class, "project_id");
+    }
+    public function documents()
+    {
+        return $this->hasOne(ProjectDocument::class, "project_id");
     }
 }

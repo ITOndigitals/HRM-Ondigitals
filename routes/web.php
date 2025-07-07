@@ -18,6 +18,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\Firebase\FirebaseController;
 use App\Http\Controllers\Firebase\NotificationCommentController;
 use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Projects\ProjectDocumentController;
 use App\Http\Controllers\Projects\ProjectParticipantController;
 use App\Http\Controllers\Requests\ApprovedRequestsController;
 use App\Http\Controllers\Requests\ExcelController;
@@ -242,6 +243,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
             Route::get('/project-changed', [ProjectController::class, 'getnPageProjects'])->name("get_n_page_project");
             Route::get('/get-deadline/{id}', [ProjectController::class, "getDeadline"])->name('get_project_deadline');
+        });
+        // handle project documents
+        Route::prefix('/project-document')->group(function () {
+            Route::post('/create', [ProjectDocumentController::class, 'createNewDocument'])->name('create_new_project_document');
+            Route::post('/update', [ProjectDocumentController::class, 'updateDocument'])->name('update_project_document');
+            Route::delete('/delete/{id}', [ProjectDocumentController::class, 'deleteDocumentPaymentPeriod'])->name('delete_terms_period');
+            Route::get('/get-document-by-project/{id}', [ProjectDocumentController::class, 'getProjectDocument'])->name('get_project_document_by_id');
         });
     });
 

@@ -8,8 +8,10 @@ export const getStatusColor = (id) => {
             return "bg-red-200 text-red-800";
         case 4: // feedback
             return "bg-yellow-300 text-yellow-800";
-        case 5: // từ chối
+        case 5: // Hủy
             return "bg-red-200 text-red-800";
+        case 6: // đang làm hoac dung cho buoc tiep theo
+            return "bg-yellow-300 text-yellow-800";
         default:
             return "bg-white text-black"; // Default màu nền
     }
