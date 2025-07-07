@@ -182,8 +182,7 @@ export default function TaskDetailModal({
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("assignee", formData.assignee);
             formDataObject.append("project_id", formData.project_id);
-
-            //          xử lý file
+            // xử lý file
             // file mới thêm
             if (addedFiles.length > 0) {
                 Array.from(addedFiles).forEach((file) => {
@@ -219,6 +218,7 @@ export default function TaskDetailModal({
             formDataObject.append("due_date", formData.due_date);
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("project_id", formData.project_id);
+            //
             if (deletedFiles.length > 0) {
                 deletedFiles.forEach((fileIndex) => {
                     formDataObject.append("delete_files[]", fileIndex);
@@ -772,7 +772,7 @@ export default function TaskDetailModal({
                     (task.step_id === 2 || task.step_id === 5) &&
                     // auth.user.id === task.next_assignee_id &&
                     task.department.members &&
-                    task.status === 1 &&
+                    (task.status === 1 || task.status === 6) &&
                     edit ? (
                         <div className="flex gap-2">
                             <div className="w-1/2">
@@ -890,7 +890,8 @@ export default function TaskDetailModal({
                     auth.user.id == task.next_assignee_id &&
                     (task.status === 1 ||
                         task.status === 3 ||
-                        task.status === 4) && (
+                        task.status === 4 ||
+                        task.status === 6) && (
                         <>
                             {!qcMode ? (
                                 <>

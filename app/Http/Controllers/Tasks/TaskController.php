@@ -88,7 +88,7 @@ class TaskController extends Controller
             'name' => $newTask['name'],
             'description' => "",
             'next_assignee_id' => $nextDepartment['manager'],
-            'status' => 1, // default 
+            'status' => 6, // đang chờ
             'category_id' => $newTask["category_id"],
             'step_order' => 2,
             'created_by' => auth()->id(),
@@ -498,8 +498,8 @@ class TaskController extends Controller
         $user = auth()->user();
         $tasks = Task::with(["department.members", "category", "creator", "assignee", "statusDetails", 'project'])
             ->where('next_assignee_id', $user->id)
-            ->where("status", 1)
-            ->whereIn('step_id', values: [2, 5])
+            ->whereIn("status", [1, 6])
+            ->whereIn('step_id',  [2, 5])
             //task mới do account khởi tạo
             ->orderBy('updated_at', 'desc')
             ->get();

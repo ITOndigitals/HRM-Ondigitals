@@ -63,6 +63,8 @@ export default function ProjectsList({
                         auth={auth}
                         closeSidebar={() => setSelectedProject(null)}
                         onProjectUpdated={onProjectUpdated} // Truyền callback vào ProjectsList
+                        // edit={(edit)}
+                        edit={selectedProject.created_by === auth.user.id}
                     />
                 </>
             )}

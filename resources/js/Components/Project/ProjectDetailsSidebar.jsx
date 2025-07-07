@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ParticipantSelector from "./ParticipantSelector";
+import ProjectDocuments from "./ProjectDocuments";
 
 export default function ProjectDetailsSidebar({
     auth,
     project,
     closeSidebar,
     onProjectUpdated,
+    edit,
 }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [statues, setStatues] = useState([]);
@@ -71,7 +73,6 @@ export default function ProjectDetailsSidebar({
             alert("Deadline cannot be in the past.");
             return; // Không cập nhật nếu ngày kết thúc không hợp lệ
         }
-
         setUpdatedProject((prev) => ({
             ...prev,
             end_date: newEndDate,
@@ -79,93 +80,96 @@ export default function ProjectDetailsSidebar({
     };
 
     return (
-        <div className="fixed top-0 right-0 w-1/2 h-full bg-white shadow-lg p-6 z-20 overflow-auto">
-            <button
-                className="text-red-500 mb-4 w-full font-extrabold text-end"
-                onClick={closeSidebar}
-            >
-                Close
-            </button>
-            <h2 className="text-xl font-bold mb-4">Project Details</h2>
-            <div className="space-y-4">
-                <div>
-                    <label className="block font-bold">Name</label>
-                    <input
-                        type="text"
-                        readOnly={project.created_by !== auth.user.id}
-                        className="border rounded w-full p-2"
-                        value={updatedProject.name}
-                        onChange={(e) =>
-                            setUpdatedProject({
-                                ...updatedProject,
-                                name: e.target.value,
-                            })
-                        }
-                    />
+        <div className="fixed top-0 right-0 w-1/2 h-full bg-white shadow-lg  z-20 overflow-auto flex flex-col gap-5">
+            <div className="p-6">
+                <button
+                    className="text-red-500 mb-4 w-full font-extrabold text-end"
+                    onClick={closeSidebar}
+                >
+                    Close
+                </button>
+                <h2 className="text-xl font-bold mb-4">Chi tiết dự án</h2>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block font-bold">Tên</label>
+                        <input
+                            type="text"
+                            readOnly={project.created_by !== auth.user.id}
+                            className="border rounded w-full p-2"
+                            value={updatedProject.name}
+                            onChange={(e) =>
+                                setUpdatedProject({
+                                    ...updatedProject,
+                                    name: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
+                    <div>
+                        <label className="block font-bold">Mô tả</label>
+                        <textarea
+                            readOnly={project.created_by !== auth.user.id}
+                            className="border rounded w-full p-2"
+                            value={updatedProject?.description}
+                            onChange={(e) =>
+                                setUpdatedProject({
+                                    ...updatedProject,
+                                    description: e.target.value,
+                                })
+                            }
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block font-bold">Deadline</label>
+                        <input
+                            readOnly={project.created_by !== auth.user.id}
+                            type="date"
+                            className="border rounded w-full p-2"
+                            value={updatedProject.end_date}
+                            onChange={handleEndDateChange}
+                        />
+                    </div>
+                    <div>
+                        <label className="block font-bold">Trạng thái</label>
+                        <select
+                            disabled={project.created_by !== auth.user.id}
+                            className="border rounded w-full p-2"
+                            value={updatedProject.status}
+                            onChange={(e) =>
+                                setUpdatedProject({
+                                    ...updatedProject,
+                                    status: Number(e.target.value),
+                                })
+                            }
+                        >
+                            {statues &&
+                                statues.map((item) => (
+                                    <option key={item?.id} value={item?.id}>
+                                        {item?.name}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label className="block font-bold">Description</label>
-                    <textarea
-                        readOnly={project.created_by !== auth.user.id}
-                        className="border rounded w-full p-2"
-                        value={updatedProject?.description}
-                        onChange={(e) =>
-                            setUpdatedProject({
-                                ...updatedProject,
-                                description: e.target.value,
-                            })
-                        }
-                    ></textarea>
-                </div>
-                <div>
-                    <label className="block font-bold">End Date</label>
-                    <input
-                        readOnly={project.created_by !== auth.user.id}
-                        type="date"
-                        className="border rounded w-full p-2"
-                        value={updatedProject.end_date}
-                        onChange={handleEndDateChange}
-                    />
-                </div>
-                <div>
-                    <label className="block font-bold">Status</label>
-                    <select
-                        disabled={project.created_by !== auth.user.id}
-                        className="border rounded w-full p-2"
-                        value={updatedProject.status}
-                        onChange={(e) =>
-                            setUpdatedProject({
-                                ...updatedProject,
-                                status: Number(e.target.value),
-                            })
-                        }
-                    >
-                        {statues &&
-                            statues.map((item) => (
-                                <option key={item?.id} value={item?.id}>
-                                    {item?.name}
-                                </option>
-                            ))}
-                    </select>
-                </div>
+                {project.created_by === auth.user.id && (
+                    <div className="mt-6 flex space-x-4">
+                        <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            onClick={handleUpdate}
+                            disabled={isUpdating}
+                        >
+                            {isUpdating ? "Updating..." : "Update"}
+                        </button>
+                        <button
+                            className="bg-red-500 text-white px-4 py-2 rounded"
+                            onClick={handleDelete}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                )}
             </div>
-            {project.created_by === auth.user.id && (
-                <div className="mt-6 flex space-x-4">
-                    <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                        onClick={handleUpdate}
-                        disabled={isUpdating}
-                    >
-                        {isUpdating ? "Updating..." : "Update"}
-                    </button>
-                    <button
-                        className="bg-red-500 text-white px-4 py-2 rounded"
-                        onClick={handleDelete}
-                    >
-                        Delete
-                    </button>
-                </div>
-            )}
+            <ProjectDocuments edit={edit} projectId={project.id} />
         </div>
     );
 }
