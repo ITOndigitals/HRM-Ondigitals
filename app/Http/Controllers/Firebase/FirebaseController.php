@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Firebase;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use App\Models\InputDetailRequest;
 use App\Models\User;
 use App\Models\UserRequests;
@@ -16,10 +17,13 @@ class FirebaseController extends Controller
     protected $database;
     protected $tableName;
 
+    protected $hrId;
+
     public function __construct()
     {
         $this->database = Firebase::database();
         $this->tableName = "notification/user";
+        $this->hrId = Department::where('department_name', 'HR')->value('manager');
     }
     // public function index($id_user)
     // {
@@ -63,9 +67,12 @@ class FirebaseController extends Controller
         // Thực hiện ghi dữ liệu vào Firebase cho người nhận (quản lý trực tiếp)
         $postReceiverRef = $this->database->getReference($this->tableName . '/' . $requestData['follower'] . '/' . $id . '/receive');
         $postReceiverRef->set($postData);
-        // Thực hiện ghi dữ liệu vào Firebase cho người nhận (nhân sự HR)
-        if ($requestData['id_user'] != 35) {
-            $postReceiverRef = $this->database->getReference($this->tableName . '/' . 35 . '/' . $id . '/receive');
+        // Thực hiện ghi dữ liệu vào Firebase cho người nhận (nhân sự HR) (Nguyễn Thị Khánh Trúc)
+        // if ($requestData['id_user'] != 35) {
+        if ($requestData['id_user'] != $this->hrId) {
+            // $postReceiverRef = $this->database->getReference($this->tableName . '/' . 35 . '/' . $id . '/receive');
+            $postReceiverRef = $this->database->getReference($this->tableName . '/' . $this->hrId . '/' . $id . '/receive');
+
             $postReceiverRef->set($postData);
         }
         return response()->json(["status" => true]);
@@ -86,8 +93,11 @@ class FirebaseController extends Controller
         $postReceiverRef = $this->database->getReference($this->tableName . '/' . (int)$requestData['idFollower'] . '/' . (int)$id . '/receive');
         $postReceiverRef->update($postData);
         // Thực hiện ghi dữ liệu vào Firebase cho người nhận (nhân sự HR)
-        if ((int)$requestData['idUser'] != 35) {
-            $postReceiverRef = $this->database->getReference($this->tableName . '/' . 35 . '/' . $id . '/receive');
+        // if ((int)$requestData['idUser'] != 35) {
+        if ($requestData['id_user'] != $this->hrId) {
+            // $postReceiverRef = $this->database->getReference($this->tableName . '/' . 35 . '/' . $id . '/receive');
+            $postReceiverRef = $this->database->getReference($this->tableName . '/' . $this->hrId . '/' . $id . '/receive');
+
             $postReceiverRef->update($postData);
         }
         return response()->json(["status" => true]);
