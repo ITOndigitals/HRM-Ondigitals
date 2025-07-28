@@ -1250,6 +1250,7 @@ class TaskController extends Controller
             ->with([
                 'tasks' => function ($task) {
                     $task
+                        ->where('parent_id', null)
                         ->orderBy('parent_task_id', 'desc')
                         ->orderBy('created_at', 'desc')
                     ;
@@ -1268,14 +1269,37 @@ class TaskController extends Controller
             ->skip(15 * $page)
             ->take(16)
             ->get();
+        // kiểm tra task con được update trễ nhất (kiểm tra task categories của task con có parent_id hay không)
 
         $projects->each(function ($project) {
-            $project->status = $project->statusDetails;
+            // $lastestChildTask = Task::where('parent_task_id', $project->tasks->id)->orderBy('updated_at')->first();
+            // new temporary
+            // foreach ($project->tasks as $task) {
+            //     $lastestChildTask = Task::where('parent_task_id', $task->id)
+            //         ->with(['stepDetail', 'taskGroup', 'department', 'assignee', 'category'])
+            //         ->orderBy('updated_at', 'desc')
+            //         ->first();
+            //     $task->latestChild = $lastestChildTask;
+            // }
+            // $project->status = $project->statusDetails;
+            // 
+            // 
+            // $project->childTask = $lastestChildTask;
             // $uniqueTask = $project->tasks->unique(['category_id', 'name'])->values();
+            // chi lay cac task con co category id khac nhau 
+            // xoa
+            // chi lay task con cuoi cung 
+            // task con thuoc category brief (hoac lay task cha nhung hien thong tin tu task con )
+            // 
+            // 
+            // 
+            $project->status = $project->statusDetails;
             $uniqueTask = $project->tasks->unique(function ($task) {
                 return json_encode([$task->category_id, $task->name]);
             })->values();
+            // // xoa task cu lay tu project  
             unset($project->tasks);
+            // // gan tasks moi vao project
             $project->tasks = $uniqueTask;
             unset($project->statusDetails);
         });
