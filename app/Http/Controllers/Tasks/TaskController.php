@@ -923,6 +923,9 @@ class TaskController extends Controller
                         'task_step_flow' => $task['task_step_flow'],
                         'task_links' => $task['task_links']
                     ]);
+                    // new test
+                    $this->updateTaskStepFlow($newTask, 1);
+
                     $currentDepartment = Department::find($task['department_id']);
                     // gửi mail cho team kế tiếp
                     try {
@@ -1274,15 +1277,16 @@ class TaskController extends Controller
         $projects->each(function ($project) {
             // $lastestChildTask = Task::where('parent_task_id', $project->tasks->id)->orderBy('updated_at')->first();
             // new temporary
-            // foreach ($project->tasks as $task) {
-            //     $lastestChildTask = Task::where('parent_task_id', $task->id)
-            //         ->with(['stepDetail', 'taskGroup', 'department', 'assignee', 'category'])
-            //         ->orderBy('updated_at', 'desc')
-            //         ->first();
-            //     $task->latestChild = $lastestChildTask;
-            // }
-            // $project->status = $project->statusDetails;
-            // 
+            foreach ($project->tasks as $task) {
+                $lastestChildTask = Task::where('parent_task_id', $task->id)
+                    ->whereNotIn('category_id', [5])
+                    ->with(['stepDetail', 'taskGroup', 'department', 'assignee', 'category', 'statusDetails', 'creator'])
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('step_id', 'desc')
+                    ->first();
+                $task->latestChild = $lastestChildTask;
+            }
+            $project->status = $project->statusDetails;
             // 
             // $project->childTask = $lastestChildTask;
             // $uniqueTask = $project->tasks->unique(['category_id', 'name'])->values();
@@ -1291,9 +1295,7 @@ class TaskController extends Controller
             // chi lay task con cuoi cung 
             // task con thuoc category brief (hoac lay task cha nhung hien thong tin tu task con )
             // 
-            // 
-            // 
-            $project->status = $project->statusDetails;
+            // $project->status = $project->statusDetails;
             $uniqueTask = $project->tasks->unique(function ($task) {
                 return json_encode([$task->category_id, $task->name]);
             })->values();

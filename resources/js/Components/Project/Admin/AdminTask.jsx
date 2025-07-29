@@ -11,6 +11,7 @@ export default function AdminTask({
     projectDeadline,
     index,
 }) {
+    console.log(task);
     const [taskDetailModal, setTaskDetailModal] = useState(false);
     const showTaskDetailModal = () => {
         if (taskDetailModal) {
@@ -34,16 +35,16 @@ export default function AdminTask({
                     {task.name}
                 </div>
                 <div className="w-2/12 h-12 flex items-center justify-center">
-                    {task?.assignee?.name}
+                    {task?.latestChild?.assignee?.name}
                 </div>
                 <div className="w-2/12 h-12 flex items-center justify-center text-center">
-                    {task?.step_detail?.name}
+                    {task?.latestChild?.step_detail?.name}
                 </div>
                 <div className="w-1/12 h-12 flex items-center justify-center">
-                    {task?.department.department_name}
+                    {task?.latestChild?.department.department_name}
                 </div>
                 <div className="w-1/12 h-12 px-2 flex justify-center  items-center text-center">
-                    {task.category.name}
+                    {task.latestChild?.category.name}
                 </div>
                 <div className="w-2/12 h-12 px-2 flex justify-center  items-center">
                     {task.due_date}
@@ -51,10 +52,10 @@ export default function AdminTask({
                 <div className="w-2/12 h-12 px-2 flex items-center">
                     <p
                         className={`font-bold text-sm p-2 rounded-2xl w-full text-center ${getStatusColor(
-                            task.status_details?.id
+                            task?.latestChild?.status_details?.id
                         )}`}
                     >
-                        {task.status_details?.name}
+                        {task?.latestChild?.status_details?.name}
                     </p>
                 </div>
             </div>
@@ -68,7 +69,7 @@ export default function AdminTask({
                     ></div>
                     <TaskDetailModal
                         projectDeadline={projectDeadline}
-                        task={task}
+                        task={task.latestChild}
                         handleModalClose={() => setTaskDetailModal(false)}
                         projectParticipants={projectParticipants}
                         onTaskCreate={onTaskCreate}
