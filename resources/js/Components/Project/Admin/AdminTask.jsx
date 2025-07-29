@@ -11,7 +11,6 @@ export default function AdminTask({
     projectDeadline,
     index,
 }) {
-    console.log(task);
     const [taskDetailModal, setTaskDetailModal] = useState(false);
     const showTaskDetailModal = () => {
         if (taskDetailModal) {

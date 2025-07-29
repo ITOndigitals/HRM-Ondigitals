@@ -40,10 +40,11 @@ export default function AdminTaskList({ auth }) {
     // };
     return (
         <>
-            <div className="relative my-10">
-                <div className="flex flex-col gap-2">
+            <div className="relative my-5">
+                {/* <div className="relative my-10"> */}
+                {/* <div className="flex flex-col gap-2">
                     <DeadlineTasks auth={auth}></DeadlineTasks>
-                </div>
+                </div> */}
                 <div className="font-bold text-lg mt-4">Danh sách dự án:</div>
                 <div className="flex flex-col gap-2">
                     <ProjectsList
