@@ -94,7 +94,7 @@ class FirebaseController extends Controller
         $postReceiverRef->update($postData);
         // Thực hiện ghi dữ liệu vào Firebase cho người nhận (nhân sự HR)
         // if ((int)$requestData['idUser'] != 35) {
-        if ($requestData['id_user'] != $this->hrId) {
+        if ($requestData['idUser'] != $this->hrId) {
             // $postReceiverRef = $this->database->getReference($this->tableName . '/' . 35 . '/' . $id . '/receive');
             $postReceiverRef = $this->database->getReference($this->tableName . '/' . $this->hrId . '/' . $id . '/receive');
 
