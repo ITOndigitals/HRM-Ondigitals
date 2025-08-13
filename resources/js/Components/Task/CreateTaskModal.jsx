@@ -79,6 +79,7 @@ export default function CreateTaskModal({
                     route("Create_task"),
                     formData
                 );
+                console.log(response.data);
                 alert(response.data.message || "Task created successfully!");
                 resetForm();
                 handleCreateTaskClose();

@@ -20,7 +20,6 @@ export default function AdminTaskList({ auth }) {
                     page: page,
                 })
             );
-            console.log(data.projects);
             setProjects(data.projects);
             if (data.hasMore !== hasMore) {
                 setHasMore(data.hasMore);

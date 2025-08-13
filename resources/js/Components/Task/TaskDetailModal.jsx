@@ -33,7 +33,7 @@ export default function TaskDetailModal({
     const [feedback, setFeedback] = useState();
     const [showNoteModal, setShowNoteModal] = useState(false);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    const [deadline, setDeadline] = useState(null);
+    // const [deadline, setDeadline] = useState(null);
     const [processing, setProcessing] = useState(false);
     const [authDepartment, setAuthDepartment] = useState([]);
     const [deletedLinks, setDeletedLinks] = useState([]);
@@ -123,7 +123,6 @@ export default function TaskDetailModal({
                     feedback: feedback,
                 })
             );
-            console.log(data.message);
             alert(data.message);
             setUpdating(false);
             setShowFeedbackModal(false);
@@ -335,7 +334,6 @@ export default function TaskDetailModal({
                 route("Update_task", task.id),
                 formDataObject
             );
-            console.log(data.message);
             if (data.deadlineConflict) {
                 setIsDialogOpen(true);
             } else {
@@ -354,14 +352,23 @@ export default function TaskDetailModal({
             alert("failed to update load more task ");
         }
     };
-
+    const handleSendToClient = async () => {
+        setUpdating(true);
+        try {
+            console.log(task.id);
+            const { data } = axios.post(route("Update_sent_status"), task.id);
+            alert("Cập nhật trạng thái thành công");
+        } catch (error) {
+            setUpdating(false);
+            console.log(error);
+        }
+    };
     const handleQC = async (isApproved) => {
         try {
             setUpdating(true);
             if (!qcNote && !isApproved) {
                 alert("Hãy nhập ghi chú");
                 setUpdating(false);
-
                 return;
             }
             const formDataObject = new FormData();
@@ -479,15 +486,48 @@ export default function TaskDetailModal({
             [task.department.department_name]: [],
         }));
     }
+
+    // new 29/07
+    // new 12.08.25
+    // const [stepDetail, setStepDetail] = useState(null);
+    // const fetchStepDetail = async (taskId) => {
+    //     try {
+    //         const { data } = await axios.get(route("get_task_by_id", taskId));
+    //         if (data.task) {
+    //             setStepDetail(data.task);
+    //         } else {
+    //             setStepDetail(null);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching parent task:", error);
+    //     }
+    // };
     return (
         <div className="fixed flex top-0 right-0 w-3/5 h-full bg-white shadow-lg px-3 py-6 overflow-auto z-20 items-stretch">
             <TaskFlowProgress
                 renderQCstatus={renderQCstatus}
-                hasFeedBack={task?.feedback}
-                hasQC={task?.qc_note}
-                currentTaskFlow={task.task_step_flow}
+                // hasFeedBack={task?.feedback}
+                // hasQC={task?.qc_note}
+                // currentTaskFlow={task.task_step_flow}
+                // taskCategory={task?.category?.name}
+                task={task}
                 auth={auth}
+                edit={edit}
+                // fetchStepDetail={fetchStepDetail}
+                // stepDetail={stepDetail}
             ></TaskFlowProgress>
+            {/* only in admin  */}
+            {/* {!edit && auth.user.role && (
+                    <TaskFlowProgress
+                        renderQCstatus={renderQCstatus}
+                        hasFeedBack={task?.feedback}
+                        hasQC={task?.qc_note}
+                        currentTaskFlow={task.task_step_flow}
+                        auth={auth}
+                        // fetchStepDetail={fetchStepDetail}
+                        // stepDetail={stepDetail}
+                    ></TaskFlowProgress>
+                )} */}
             <div className="flex flex-col w-4/5 border-l border-gray-400 pl-4 h-fit relative">
                 <button
                     type="button"
@@ -945,31 +985,47 @@ export default function TaskDetailModal({
                                         )}
                                     {task.next_assignee_id === auth.user.id &&
                                         task.step_id == 8 && (
-                                            <div className="flex gap-3 py-3">
-                                                <button
-                                                    type="button"
-                                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                                    onClick={() => {
-                                                        setShowFeedbackModal(
-                                                            true
-                                                        );
-                                                    }}
-                                                    disabled={updating}
-                                                >
-                                                    {updating
-                                                        ? "Sending feedback"
-                                                        : "Send feedback"}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                                                    onClick={handleComplete}
-                                                    disabled={processing}
-                                                >
-                                                    {processing
-                                                        ? "Processing..."
-                                                        : "Task complete"}
-                                                </button>
+                                            <div>
+                                                {/* <div className="flex gap-3 py-3 justify-center">
+                                                    <button
+                                                        type="button"
+                                                        className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 font-bold"
+                                                        onClick={
+                                                            handleSendToClient
+                                                        }
+                                                        disabled={updating}
+                                                    >
+                                                        {updating
+                                                            ? "Đang gửi"
+                                                            : "Đã Gửi Khách"}
+                                                    </button>
+                                                </div> */}
+                                                <div className="flex gap-3 py-3">
+                                                    <button
+                                                        type="button"
+                                                        className="bg-green-500 text-white px-4 py-2 rounded"
+                                                        onClick={() => {
+                                                            setShowFeedbackModal(
+                                                                true
+                                                            );
+                                                        }}
+                                                        disabled={updating}
+                                                    >
+                                                        {updating
+                                                            ? "Sending feedback"
+                                                            : "Send feedback"}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                                        onClick={handleComplete}
+                                                        disabled={processing}
+                                                    >
+                                                        {processing
+                                                            ? "Processing..."
+                                                            : "Task complete"}
+                                                    </button>
+                                                </div>
                                             </div>
                                         )}
                                 </>
