@@ -16,7 +16,7 @@ class Department extends Model
         "updated_at",
         "manager"
     ];
-    public function manager()
+    public function managerDetail()
     {
         return $this->belongsTo(User::class, 'manager');
     }

@@ -220,7 +220,7 @@ export default function Detail_user({ user, allLeaderAdmin, auth }) {
                                                     <option disabled>
                                                         Pick role
                                                     </option>
-                                                    <option value="0">
+                                                    <option value="">
                                                         Member
                                                     </option>
                                                     <option value="1">
