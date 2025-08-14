@@ -165,9 +165,8 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
                 (string)$content['so_tai_khoan'] ?? '',
                 $content['ten_chu_tai_khoan'] ?? '',
                 $content['tien_te'] ?? '',
-                $content['so_tien'] ?? '',
+                $content['so_tien'] . " " ?? '',
                 $content['noi_dung_chuyen_khoan'] ?? '',
-
             ]);
         } elseif ($this->categoryId == 8) {
             $mappedData = array_merge($mappedData, [
