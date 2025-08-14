@@ -66,6 +66,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
                 'Lý do thanh toán',
                 'Chi nhánh ngân hàng',
                 'Số tài khoản',
+                'Tên chủ tài khoản',
                 'Tiền tệ',
                 'Số tiền',
                 'Nội dung chuyển khoản'
@@ -162,6 +163,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
                 $content['ly_do'] ?? '',
                 $content['chi_nhanh'] ?? '',
                 (string)$content['so_tai_khoan'] ?? '',
+                $content['ten_chu_tai_khoan'] ?? '',
                 $content['tien_te'] ?? '',
                 $content['so_tien'] ?? '',
                 $content['noi_dung_chuyen_khoan'] ?? '',
