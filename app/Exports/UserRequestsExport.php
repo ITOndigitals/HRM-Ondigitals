@@ -38,7 +38,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             ->when($this->endDate, function ($queryBuilder, $endDate) {
                 return $queryBuilder->where('user_requests.created_at', '<=', $endDate);
             })
-            ->orderBy('user_requests.id', 'DESC')
+            ->orderBy('user_requests.id', 'ASC')
             ->get();
     }
 
@@ -103,21 +103,21 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             ?? $content['giay_to']
             ?? '');
 
-            if (is_array($download_links)) {
-                $file_texts = array_map(function($link) {
-                    // Sử dụng dấu phẩy làm dấu phân cách cho hàm HYPERLINK
-                    return "=HYPERLINK(\"" . $link . "\", \"Link File\")";
-                }, $download_links);
-            
-                // Tạo chuỗi hoặc mảng các hyperlink
-                $download_links_string = implode("\n", $file_texts);
-            } else {
-                $download_links_string = 'No File';
-            }
-            
-            
-                    
-            
+        if (is_array($download_links)) {
+            $file_texts = array_map(function ($link) {
+                // Sử dụng dấu phẩy làm dấu phân cách cho hàm HYPERLINK
+                return "=HYPERLINK(\"" . $link . "\", \"Link File\")";
+            }, $download_links);
+
+            // Tạo chuỗi hoặc mảng các hyperlink
+            $download_links_string = implode("\n", $file_texts);
+        } else {
+            $download_links_string = 'No File';
+        }
+
+
+
+
         $mappedData = [
             $request->id,
             $request->user_name,

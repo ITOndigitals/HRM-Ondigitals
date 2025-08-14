@@ -57,7 +57,6 @@ export default function AdminTaskListSection({
                         edit={edit}
                         auth={auth}
                     />
-
                     {tasks.length > 1 && !viewMore && (
                         <div
                             className="cursor-pointer text-blue-600 px-3 py-2"
