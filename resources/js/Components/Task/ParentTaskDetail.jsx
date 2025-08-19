@@ -55,7 +55,7 @@ export default function ParentTaskDetail({
                         Khách có feedback
                     </div>
                 )}
-                {renderQCstatus(task)}
+                {/* {renderQCstatus(task)} */}
                 <div className="space-y-4">
                     <div>
                         <label className="block font-bold py-2">

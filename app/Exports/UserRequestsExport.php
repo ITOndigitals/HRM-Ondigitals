@@ -115,10 +115,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
         } else {
             $download_links_string = 'No File';
         }
-
-
-
-
         $mappedData = [
             $request->id,
             $request->user_name,
@@ -129,11 +125,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $request->created_at,
             $download_links_string // Đặt chuỗi URL đã được nối vào mảng xuất ra Excel
         ];
-
-
-
-
-
         // Thêm dữ liệu cho các cột tùy chỉnh cho từng category
         if ($this->categoryId == 7) {
             $start_datetime = $content['ngay_ot'] . ' ' . ($content['gio_bat_dau'] ?? '');
@@ -180,7 +171,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $start_datetime_8 = ($content['ngay_nghi'] ?? '') . ' ' . ($content['gio_bat_dau'] ?? '');
             $end_datetime_8 = ($content['ngay_nghi'] ?? '') . ' ' . ($content['gio_ket_thuc'] ?? '');
             $working_hours = $start_datetime_8 && $end_datetime_8 ? HelperFunctions::calculateWorkingHours($start_datetime_8, $end_datetime_8) : "No Data";
-
             $mappedData = array_merge($mappedData, [
                 $content['ly_do_nghi'] ?? '',
                 $content['loai_nghi_phep'] ?? '',

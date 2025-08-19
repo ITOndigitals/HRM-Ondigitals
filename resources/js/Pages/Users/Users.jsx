@@ -12,7 +12,6 @@ import TextInput from "@/Components/TextInput";
 import { Link } from "@inertiajs/react";
 
 export default function Users({ auth, users }) {
-    console.log(users);
     const [showModal, setShowModal] = useState(false);
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);

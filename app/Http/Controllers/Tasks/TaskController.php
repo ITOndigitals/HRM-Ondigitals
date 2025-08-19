@@ -1037,7 +1037,7 @@ class TaskController extends Controller
         }
         $tasks = Task::with(["department.members", "category", "creator", "assignee", 'statusDetails', 'project'])
             ->where('next_assignee_id', $user->id)
-            ->where("status", 1)
+            ->whereIn("status", [1, 7])
             ->where('step_id', 8)
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -1111,20 +1111,18 @@ class TaskController extends Controller
         // task cuối của flow
         $task = Task::find($id);
         if ($task) {
-            $task->status = 2;
+            $task->status = 8;
             $task->save();
-            $this->updateTaskStepFlow($task, 2);
+            $this->updateTaskStepFlow($task, 8);
         } else {
             return response()->json(['message' => "Không tồn tại công việc này"]);
         }
         // đánh dấu hoàn thành
         $taskStepFlow = json_decode($task['task_step_flow'], true);
         $stepFlowLength = array_key_last($taskStepFlow);
-        $taskStepFlow[$stepFlowLength]['status'] = 2;
+        $taskStepFlow[$stepFlowLength]['status'] = 8;
         $task->task_step_flow = json_encode($taskStepFlow);
         $task->save();
-        //  $taskStepFlow
-
         // check toàn bộ task con bất kể step_id
         $group_task = Task::where('parent_task_id', $task['parent_task_id'])->get();
         // kiểm tra toàn bộ task account con
@@ -1151,7 +1149,7 @@ class TaskController extends Controller
         $tasks = Task::with(["department.members", "category", "creator", "assignee", 'statusDetails', 'project'])
             ->where('next_assignee_id', $user['id'])
             ->where('step_id', 8)
-            ->where('status', 2)
+            ->whereIn('status', [2, 8])
             ->skip(15 * $request->page)
             ->take(16)
             ->orderBy('updated_at', 'desc')
@@ -1404,7 +1402,16 @@ class TaskController extends Controller
         }
         return response()->json($result);
     }
-    public function updateSentStatus(Request $request, $id) {}
+    public function updateSentStatus(Request $request, $id)
+    {
+        $task = Task::find($id);
+        if ($task) {
+            // cập nhật trạng thái đang gửi khách
+            $task->update(['status' => 7]);
+        }
+        return response()->json(['message' => 'Cập nhật trạng thái thành công!']);
+    }
+
     public function getPostCaption(Request $request, $id)
     {
         $postCaptionTask = Task::where("parent_task_id", $id)

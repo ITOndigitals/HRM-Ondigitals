@@ -280,11 +280,11 @@ export default function TaskDetailModal({
                 formDataObject
             );
             alert(data.message);
-            setUpdating(false);
+            setProcessing(false);
             onTaskCreate();
         } catch (error) {
             console.error();
-            setUpdating(false);
+            setProcessing(false);
         }
     };
     const handleUpdate = async () => {
@@ -347,7 +347,6 @@ export default function TaskDetailModal({
             setUpdating(false);
         } catch (error) {
             console.error();
-            console.log(error);
             setUpdating(false);
             alert("failed to update load more task ");
         }
@@ -355,9 +354,10 @@ export default function TaskDetailModal({
     const handleSendToClient = async () => {
         setUpdating(true);
         try {
-            console.log(task.id);
-            const { data } = axios.post(route("Update_sent_status"), task.id);
+            const { data } = axios.post(route("Update_sent_status", task.id));
             alert("Cập nhật trạng thái thành công");
+            setUpdating(false);
+            onTaskCreate();
         } catch (error) {
             setUpdating(false);
             console.log(error);
@@ -928,10 +928,7 @@ export default function TaskDetailModal({
                 )}
                 {task.qc_status !== 1 &&
                     auth.user.id == task.next_assignee_id &&
-                    (task.status === 1 ||
-                        task.status === 3 ||
-                        task.status === 4 ||
-                        task.status === 6) && (
+                    [1, 3, 4, 6, 7].includes(task.status) && (
                         <>
                             {!qcMode ? (
                                 <>
@@ -986,20 +983,38 @@ export default function TaskDetailModal({
                                     {task.next_assignee_id === auth.user.id &&
                                         task.step_id == 8 && (
                                             <div>
-                                                {/* <div className="flex gap-3 py-3 justify-center">
-                                                    <button
-                                                        type="button"
-                                                        className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 font-bold"
-                                                        onClick={
-                                                            handleSendToClient
-                                                        }
-                                                        disabled={updating}
-                                                    >
-                                                        {updating
-                                                            ? "Đang gửi"
-                                                            : "Đã Gửi Khách"}
-                                                    </button>
-                                                </div> */}
+                                                {task.status !== 7 ? (
+                                                    <div className="flex gap-3 py-3 justify-center">
+                                                        <button
+                                                            type="button"
+                                                            className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 font-bold"
+                                                            onClick={
+                                                                handleSendToClient
+                                                            }
+                                                            disabled={updating}
+                                                        >
+                                                            {updating
+                                                                ? "Đang gửi"
+                                                                : "Đã Gửi Khách"}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex gap-3 py-3 justify-center">
+                                                        <button
+                                                            type="button"
+                                                            className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 font-bold opacity-30"
+                                                            onClick={
+                                                                handleSendToClient
+                                                            }
+                                                            disabled={true}
+                                                        >
+                                                            {updating
+                                                                ? "Đang gửi"
+                                                                : "Đã Gửi Khách"}
+                                                        </button>
+                                                    </div>
+                                                )}
+
                                                 <div className="flex gap-3 py-3">
                                                     <button
                                                         type="button"

@@ -41,14 +41,26 @@ export default function TaskFlowSingle({ task, renderQCstatus, auth }) {
                         Công việc: {task?.category?.name}
                     </div>
                 )}
-                {task?.feedback && (
+                {task?.feedback && task.status !== 8 && (
                     <div className="text-yellow-600 text-center font-bold text-lg">
                         Khách có feedback
                     </div>
                 )}
-                {task?.qc_note && (
-                    <div className="text-red-600 text-center font-bold text-lg">
-                        leader đã từ chối
+                {task?.qc_note &&
+                    task.status !==
+                        8(
+                            <div className="text-red-600 text-center font-bold text-lg">
+                                leader đã từ chối
+                            </div>
+                        )}
+                {task?.status == 7 && (
+                    <div className="text-blue-600 text-center font-bold text-lg border-2 border-blue-700">
+                        Đã Gửi Khách
+                    </div>
+                )}
+                {task?.status == 8 && (
+                    <div className="text-green-600 text-center font-bold text-lg border-2 border-green-700">
+                        Khách Đã Duyệt
                     </div>
                 )}
                 {steps && (
