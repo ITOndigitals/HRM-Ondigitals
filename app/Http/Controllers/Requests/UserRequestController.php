@@ -220,10 +220,8 @@ class UserRequestController extends Controller
                 $existingApprovers[$approverId] = $approver;
             }
         }
-
         // Chuyển đổi mảng associatives thành mảng index
         $flowOfApprovers = array_values($existingApprovers);
-
         // Cập nhật lại trường 'flow_approvers' sau khi đã thay thế user_id thành ID thực tế
         $userRequest = UserRequests::create([
             'request_name' => $requestName,
@@ -233,10 +231,7 @@ class UserRequestController extends Controller
             'content_request' => json_encode($requestAll, JSON_UNESCAPED_UNICODE),
             'flow_approvers' => json_encode($flowOfApprovers, JSON_UNESCAPED_UNICODE),
         ]);
-
-
         $newlyCreatedId = $userRequest->id;
-
         // Lưu dữ liệu vào bảng request_approval
         foreach ($flowOfApprovers as $approver) {
             RequestApproval::create([
@@ -259,7 +254,6 @@ class UserRequestController extends Controller
                 throw $th;
             }
         }
-
         return response()->json(['status' => true, 'id' => $newlyCreatedId]);
     }
     public function update(Request $request)
