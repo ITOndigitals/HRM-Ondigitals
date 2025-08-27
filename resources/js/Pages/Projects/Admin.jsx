@@ -26,11 +26,13 @@ let sideBarItems = [
 export default function Admin({ auth }) {
     let filterSideBarItems = [];
     if (auth.user.role !== "99") {
-        filterSideBarItems = sideBarItems.filter("taskList");
+        // filterSideBarItems = sideBarItems.filter("taskList");
+        filterSideBarItems = sideBarItems;
     } else {
         filterSideBarItems = sideBarItems;
     }
-    const defaultComponent = auth.user.role == "99" ? "taskList" : "";
+    const defaultComponent =
+        auth.user.role == "99" || auth.user.role == "1" ? "taskList" : "";
     // const defaultComponent = "taskList";
 
     const [activeComponent, setActiveComponent] = useState(defaultComponent);
