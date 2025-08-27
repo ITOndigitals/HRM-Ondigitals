@@ -3,6 +3,7 @@ export const getStatusColor = (id) => {
         case 1: // đang làm hoac dung cho buoc tiep theo
             return "bg-gray-200 text-gray-800";
         case 2: // hoàn thành
+        case 8:
             return "bg-green-300 text-green-800";
         case 3: // từ chối
             return "bg-red-200 text-red-800";

@@ -67,7 +67,6 @@ export default function Export_requests({ auth, userRequests }) {
         // Lấy ngày hiện tại và định dạng thành chuỗi
         const today = new Date();
         const formattedDate = today.toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
-
         try {
             const { data } = await axios.post(
                 route("Export-UserRequest-Excel"),
@@ -79,15 +78,12 @@ export default function Export_requests({ auth, userRequests }) {
             const link = document.createElement("a");
             // Thêm ngày hiện tại vào tên file
             const filename = `Users_Requests_${formattedDate}.xlsx`;
-
             link.href = url;
             link.setAttribute("download", filename);
             document.body.appendChild(link);
             link.click();
-
             window.URL.revokeObjectURL(url); // Clean up URL object
             document.body.removeChild(link); // Clean up DOM
-
             alert("Xuất File Thành Công");
         } catch (error) {
             console.error("Error exporting file:", error);
@@ -224,7 +220,7 @@ export default function Export_requests({ auth, userRequests }) {
                                                 <td className="border px-4 py-2">
                                                     {request.user_name}
                                                 </td>
-                                              
+
                                                 <td className="border px-4 py-2">
                                                     {request.fully_accept ===
                                                         0 && (

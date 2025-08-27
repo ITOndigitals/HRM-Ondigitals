@@ -215,6 +215,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/update-task/{id}', [TaskController::class, 'updateTask'])->name('update_task_by_id');
         Route::get("/get-n-page-status-task", [TaskController::class, 'getNPageUserTasks'])->name('get_task_after_change');
         Route::post('/update-all-task-deadline/{id}', [TaskController::class, 'updateAllTaskDeadline'])->name('update_deadline_all_task');
+        Route::post('/update-status-sent/{id}', [TaskController::class, 'updateSentStatus'])->name('Update_sent_status');
+        Route::get("/get-post-caption/{id}", [TaskController::class, 'getPostCaption'])->name("get_post_caption_task");
     });
     // 
     // Route::middleware('check.accountLeader')->group(function () {

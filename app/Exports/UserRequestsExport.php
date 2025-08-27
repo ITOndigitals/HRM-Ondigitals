@@ -38,7 +38,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             ->when($this->endDate, function ($queryBuilder, $endDate) {
                 return $queryBuilder->where('user_requests.created_at', '<=', $endDate);
             })
-            ->orderBy('user_requests.id', 'DESC')
+            ->orderBy('user_requests.id', 'ASC')
             ->get();
     }
 
@@ -66,6 +66,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
                 'Lý do thanh toán',
                 'Chi nhánh ngân hàng',
                 'Số tài khoản',
+                'Tên chủ tài khoản',
                 'Tiền tệ',
                 'Số tiền',
                 'Nội dung chuyển khoản'
@@ -103,21 +104,17 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             ?? $content['giay_to']
             ?? '');
 
-            if (is_array($download_links)) {
-                $file_texts = array_map(function($link) {
-                    // Sử dụng dấu phẩy làm dấu phân cách cho hàm HYPERLINK
-                    return "=HYPERLINK(\"" . $link . "\", \"Link File\")";
-                }, $download_links);
-            
-                // Tạo chuỗi hoặc mảng các hyperlink
-                $download_links_string = implode("\n", $file_texts);
-            } else {
-                $download_links_string = 'No File';
-            }
-            
-            
-                    
-            
+        if (is_array($download_links)) {
+            $file_texts = array_map(function ($link) {
+                // Sử dụng dấu phẩy làm dấu phân cách cho hàm HYPERLINK
+                return "=HYPERLINK(\"" . $link . "\", \"Link File\")";
+            }, $download_links);
+
+            // Tạo chuỗi hoặc mảng các hyperlink
+            $download_links_string = implode("\n", $file_texts);
+        } else {
+            $download_links_string = 'No File';
+        }
         $mappedData = [
             $request->id,
             $request->user_name,
@@ -128,11 +125,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $request->created_at,
             $download_links_string // Đặt chuỗi URL đã được nối vào mảng xuất ra Excel
         ];
-
-
-
-
-
         // Thêm dữ liệu cho các cột tùy chỉnh cho từng category
         if ($this->categoryId == 7) {
             $start_datetime = $content['ngay_ot'] . ' ' . ($content['gio_bat_dau'] ?? '');
@@ -162,10 +154,10 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
                 $content['ly_do'] ?? '',
                 $content['chi_nhanh'] ?? '',
                 (string)$content['so_tai_khoan'] ?? '',
+                $content['ten_chu_tai_khoan'] ?? '',
                 $content['tien_te'] ?? '',
-                $content['so_tien'] ?? '',
+                $content['so_tien'] . " " ?? '',
                 $content['noi_dung_chuyen_khoan'] ?? '',
-
             ]);
         } elseif ($this->categoryId == 8) {
             $mappedData = array_merge($mappedData, [
@@ -179,7 +171,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $start_datetime_8 = ($content['ngay_nghi'] ?? '') . ' ' . ($content['gio_bat_dau'] ?? '');
             $end_datetime_8 = ($content['ngay_nghi'] ?? '') . ' ' . ($content['gio_ket_thuc'] ?? '');
             $working_hours = $start_datetime_8 && $end_datetime_8 ? HelperFunctions::calculateWorkingHours($start_datetime_8, $end_datetime_8) : "No Data";
-
             $mappedData = array_merge($mappedData, [
                 $content['ly_do_nghi'] ?? '',
                 $content['loai_nghi_phep'] ?? '',
