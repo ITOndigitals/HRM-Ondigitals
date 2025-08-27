@@ -153,9 +153,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/update/{id}', [DepartmentController::class, 'update'])->name('Update_departments');
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
         });
-        Route::prefix("/project")->group(function () {
-            Route::get("/admin", [ProjectController::class, 'adminIndex'])->name("Project_admin");
-        });
+        // Route::prefix("/project")->group(function () {
+        // });
         Route::prefix('/stepDetails')->group(function () {
             Route::post('/create-new-status', [StepDetailsController::class, 'createNewStep'])->name('create_new_task_Step');
             Route::get("/get-status-details", [StepDetailsController::class, 'getStepDetail'])->name("get_task_step_detail");
@@ -174,9 +173,7 @@ Route::middleware('auth')->group(function () {
             Route::post("/update-workflow/{id}", [TaskWorkFlowController::class, 'update'])->name('update_task_workflow');
             Route::delete("/delete-workflow/{id}", [TaskWorkFlowController::class, 'delete'])->name('delete_task_workflow');
         });
-        Route::prefix('/tasks')->group(function () {
-            Route::get("/get-all-tasks", [TaskController::class, 'fetchAllTask'])->name('get_all_tasks');
-        });
+        // Route::prefix('/tasks')->group(function () {});
         // task leader
     });
     Route::prefix('/taskCategories')->group(function () {
@@ -217,12 +214,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/update-all-task-deadline/{id}', [TaskController::class, 'updateAllTaskDeadline'])->name('update_deadline_all_task');
         Route::post('/update-status-sent/{id}', [TaskController::class, 'updateSentStatus'])->name('Update_sent_status');
         Route::get("/get-post-caption/{id}", [TaskController::class, 'getPostCaption'])->name("get_post_caption_task");
+
+        // 
+        Route::get("/get-all-tasks", [TaskController::class, 'fetchAllTask'])->name('get_all_tasks');
     });
     // 
     // Route::middleware('check.accountLeader')->group(function () {
     Route::prefix('/project')->group(function () {
         Route::get('/', [ProjectController::class, 'index'])->name('Project');
         Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
+        Route::get("/admin", [ProjectController::class, 'adminIndex'])->name("Project_admin");
     });
     // });
     // route của phòng account
