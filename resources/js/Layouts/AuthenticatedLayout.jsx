@@ -223,7 +223,7 @@ export default function Authenticated({ user, header, children }) {
                                 </>
                             )}
                             <div className="hidden sm:flex sm:items-center sm:ms-6">
-                                {user.role == "99" ? (
+                                {user.role == "1" || user.role == "99" ? (
                                     <div className="ms-3 relative">
                                         <Dropdown>
                                             <Dropdown.Trigger>
