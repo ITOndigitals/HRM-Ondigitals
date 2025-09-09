@@ -803,7 +803,7 @@ export default function TaskDetailModal({
                                     });
                                 }}
                                 min={new Date().toISOString().split("T")[0]}
-                                max={projectDeadline}
+                                // max={projectDeadline}
                             />
                         </div>
                     </div>
@@ -885,12 +885,12 @@ export default function TaskDetailModal({
                                                 member_due_date: e.target.value,
                                             });
                                         }}
-                                        min={
-                                            new Date()
-                                                .toISOString()
-                                                .split("T")[0]
-                                        }
-                                        max={task.due_date}
+                                        // min={
+                                        //     new Date()
+                                        //         .toISOString()
+                                        //         .split("T")[0]
+                                        // }
+                                        // max={task.due_date}
                                     />
                                     {errors.due_date && (
                                         <p className="text-red-500 text-sm">
