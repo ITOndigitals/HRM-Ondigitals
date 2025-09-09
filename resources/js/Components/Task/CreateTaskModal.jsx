@@ -244,10 +244,10 @@ export default function CreateTaskModal({
                             name="due_date"
                             value={formData.due_date}
                             onChange={handleChange}
-                            min={
-                                formData.start_date ||
-                                new Date().toISOString().split("T")[0]
-                            }
+                            // min={
+                            //     formData.start_date ||
+                            //     new Date().toISOString().split("T")[0]
+                            // }
                             max={deadline}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />

@@ -28,6 +28,7 @@ export default function AdminTaskList({ auth }) {
             setLoading(false);
         } catch (error) {
             console.error();
+            console.log(error);
             setLoading(false);
         }
     };

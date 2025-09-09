@@ -29,11 +29,11 @@ const useValidation = () => {
             newErrors.category_id = "Categories is required";
         // if (!formData.due_date  ) newErrors.due_date = "deadline is required.";
         if (!formData.due_date && !formData.member_due_date)
-            newErrors.due_date = "deadline is required.";
+            newErrors.due_date = "Deadline is required";
 
-        if (formData.due_date && endDateFormatted < todayFormatted) {
-            newErrors.due_date = "Deadline cannot be earlier than today.";
-        }
+        // if (formData.due_date && endDateFormatted < todayFormatted) {
+        //     newErrors.due_date = "Deadline cannot be earlier than today.";
+        // }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length;
