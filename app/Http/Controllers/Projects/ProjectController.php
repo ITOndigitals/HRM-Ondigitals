@@ -110,11 +110,12 @@ class ProjectController extends Controller
     {
         $user_id = auth()->id();
         $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
-            ->where('created_by', $user_id)
+            // ->where('created_by', $user_id)
             ->skip($request->page * 5)
             ->take(6)
             ->orderBy('updated_at', 'desc')
             ->get();
+
         $hasMore = $projects->count() < 6 ? false : true;
         $formattedProject = $projects->take(5)->map(
             function ($project) {
@@ -142,7 +143,7 @@ class ProjectController extends Controller
         $userId = auth()->id();
         $page = $request->page ? $request->page : 1;
         $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
-            ->where('created_by', $userId)
+            // ->where('created_by', $userId)
             ->take(5 * $page + 1)
             ->orderBy('updated_at', 'desc')
             ->get();

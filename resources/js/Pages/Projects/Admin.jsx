@@ -31,8 +31,8 @@ export default function Admin({ auth }) {
     } else {
         filterSideBarItems = sideBarItems;
     }
-    const defaultComponent =
-        auth.user.role == "99" || auth.user.role == "1" ? "taskList" : "";
+    const defaultComponent = "taskList";
+    // auth.user.role == "99" || auth.user.role == "1" ? "taskList" : "";
     // const defaultComponent = "taskList";
 
     const [activeComponent, setActiveComponent] = useState(defaultComponent);

@@ -130,7 +130,6 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $start_datetime = $content['ngay_ot'] . ' ' . ($content['gio_bat_dau'] ?? '');
             $end_datetime = $content['ngay_ot'] . ' ' . ($content['gio_ket_thuc'] ?? '');
             $working_hours = HelperFunctions::calculateWorkingHours($start_datetime, $end_datetime);
-
             $mappedData = array_merge($mappedData, [
                 $content['tieu_de'] ?? '',
                 $content['chi_tiet'] ?? '',

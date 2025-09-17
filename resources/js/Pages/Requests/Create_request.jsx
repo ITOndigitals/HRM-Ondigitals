@@ -5,6 +5,7 @@ import NumberInput from "@/Components/NumberInput";
 import DangerButton from "@/Components/DangerButton";
 import axios from "axios";
 import { useState } from "react";
+import { set } from "firebase/database";
 
 export default function Create_request({
     auth,
@@ -21,9 +22,11 @@ export default function Create_request({
     } else {
         content = [];
     }
+    const [updating, setUpdating] = useState(false);
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setUpdating(true);
             const formData = new FormData(e.target);
             const response = await axios.post(
                 route("Create_User_Request"),
@@ -38,8 +41,10 @@ export default function Create_request({
                 alert("Tạo đề xuất thành công");
                 // Redirect to the "dashboard" route
                 window.location.href = "/";
+                setUpdating(false);
             } else {
                 alert("Đã xảy ra lỗi khi tạo mới đề xuất");
+                setUpdating(false);
             }
         } catch (error) {
             console.error(error);
@@ -304,7 +309,10 @@ export default function Create_request({
                                             </div>
                                         )
                                     )}
-                                    <PrimaryButton type="submit">
+                                    <PrimaryButton
+                                        type="submit"
+                                        disabled={updating}
+                                    >
                                         Tạo mới
                                     </PrimaryButton>
                                     <DangerButton className="ml-5" type="reset">
