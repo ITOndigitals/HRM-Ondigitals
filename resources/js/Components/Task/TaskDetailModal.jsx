@@ -794,7 +794,11 @@ export default function TaskDetailModal({
                                     !edit || task.step_id !== 1 || !isAccount //only account can change deadline
                                 }
                                 type="date"
-                                className="border rounded w-full p-2"
+                                className={`border rounded w-full p-2 ${
+                                    !edit || task.step_id !== 1 || !isAccount
+                                        ? "opacity-80 bg-gray-300 cursor-not-allowed"
+                                        : ""
+                                }`}
                                 value={formData?.due_date}
                                 onChange={(e) => {
                                     setFormData({

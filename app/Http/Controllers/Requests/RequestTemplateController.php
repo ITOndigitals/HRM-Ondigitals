@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Requests;
 
 use App\Http\Controllers\Controller;
@@ -8,6 +9,7 @@ use Inertia\Response;
 use App\Models\RequestTemplate;
 use App\Models\InputDetailRequest;
 use App\Models\User;
+
 class RequestTemplateController extends Controller
 {
     public function index()
@@ -47,18 +49,17 @@ class RequestTemplateController extends Controller
         // dd($inputDetails->toArray());
         $allLeaderAdmin = User::where('role', '1')->orWhere('role', '99')->get();
 
-        return Inertia::render('Requests/Detail_request_template', compact('template','inputDetails','allLeaderAdmin'));
+        return Inertia::render('Requests/Detail_request_template', compact('template', 'inputDetails', 'allLeaderAdmin'));
     }
     public function updateField(Request $request, $id)
     {
-
         $template = RequestTemplate::findOrFail($id);
         $field = $request->input('field');
         $value = $request->input('value');
         $template->$field = $value;
         $template->save();
         // return response()->json(['success' => true]);
-         return redirect()->route('Detail_request_template',$id)->with('success', 'Request Template field updated successfully');
+        return redirect()->route('Detail_request_template', $id)->with('success', 'Request Template field updated successfully');
     }
     public function update(Request $request, $id)
     {
@@ -83,7 +84,6 @@ class RequestTemplateController extends Controller
         $template = RequestTemplate::find($request->id);
         $template->delete();
 
-         return redirect()->route('Request_templates')->with('success', 'Request Template deleted successfully');
-
+        return redirect()->route('Request_templates')->with('success', 'Request Template deleted successfully');
     }
 }

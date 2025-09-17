@@ -59,7 +59,6 @@ export default function Detail_template_request({
 
         // Lấy thứ tự order dựa trên số lượng người duyệt đã có
         const order = approvers.length + 1;
-
         const newApprover = {
             user_id: approver_id,
             name: approver_name,
@@ -521,7 +520,6 @@ export default function Detail_template_request({
                         <hr />
                         <div className="p-6">
                             <h3>Danh sách người duyệt </h3>
-
                             <table className="w-full">
                                 <thead>
                                     <tr>

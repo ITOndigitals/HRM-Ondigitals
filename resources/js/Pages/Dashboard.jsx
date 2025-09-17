@@ -19,6 +19,7 @@ export default function Dashboard({
     inputDetailRequests,
     userList,
 }) {
+    console.log(needApprove);
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
     const [idRequest, setIdRequest] = useState(null);
     const [dataUserRequests, setDataUserRequests] = useState(userRequests);
